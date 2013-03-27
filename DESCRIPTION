@@ -1,8 +1,8 @@
 Package: psd
 Type: Package
 Title: Adaptive, sine-multitaper power spectral density estimation
-Version: 0.3-1
-Date: 2013-03-12
+Version: 0.3-2
+Date: 2013-03-27
 Author: Robert L. Parker and Andrew J. Barbour
 Maintainer: Andrew J. Barbour <andy.barbour@gmail.com>
 Description: Power spectral density estimates are produced through
@@ -22,7 +22,7 @@ Collate: 'psd-package.R' 'func_envir.R' 'zzz.R' 'func_pspectrum.R'
         'func_psdcore.R' 'func_riedsid.R' 'func_tapers.R'
         'func_whiten.R' 'func_utils.R' 'func_norm.R' 'func_specprops.R'
         'func_spec.R'
-Packaged: 2013-03-12 22:25:39 UTC; abarbour
+Packaged: 2013-03-27 19:46:32 UTC; abarbour
 NeedsCompilation: yes
 Repository: CRAN
-Date/Publication: 2013-03-13 07:31:45
+Date/Publication: 2013-03-27 23:11:47

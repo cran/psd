@@ -529,10 +529,9 @@ lines(Pspec$freq, Pspec$spec, col="red", lwd=2)
 
 This question must be addressed on a case-by-base basis; but, if there
 is significant auto-regressive structure in the series then
-the answer is likely \SC{Yes}.
-The MAGNET dataset is an example where removing the spectrum
-of the innovations from the AR prewhitening procedure can
-reduce spectral variance considerably.
+the answer is likely \SC{Yes}.  
+The MAGNET dataset is an example where the structure of the series
+is nicely represented by an AR model with a random noise component.
 
 Recall the results of the prewhitening in Section \ref{sxn:prew}.
 While \Rcmd{AR.max} was set relatively high,
@@ -549,24 +548,26 @@ psd_ar <- psdcore(ats_ar, ntaper=ntap, refresh=TRUE)
 dB(mean(psd_ar$spec))
 @
 
-An example of this potential variance-reduction is shown in Figure \ref{fig:arspecvar},
-which we have used \Rcmd{pilot\_spec} to remove the AR spectrum
-internally.  The non-AR component adds approximately $\pm 3$ dB to the original spectrum,
-and removing it will give a considerably smoother spectrum without the 
-need for adaptive 
-taper optimization.
+In Figure \ref{fig:arspecvar} we have used \Rcmd{pilot\_spec} to 
+model the spectral response of the AR component of the series (solid
+black line).
+The non-AR component (labelled "AR-innovations")
+contributes approximately $\pm 3$ dB to the original spectrum.
+Overlain on these series is the adaptive spectrum found previously.
 
 \begin{figure}[htb!]
 \begin{center}
 <<eval=TRUE, echo=TRUE, fig.width=6.0, fig.height=5.4, label=MAGPSDAR>>=
 pilot_spec(ats_lm, ntap=ntap, remove.AR=100, plot=TRUE)
 plot(Aspec, log="dB", add=TRUE, col="grey", lwd=4) 
-plot(Aspec, log="dB", add=TRUE, lwd=3, lty=3) 
+plot(Aspec, log="dB", add=TRUE, lwd=3, lty=3)
+spec.ar(ats_lm, log="dB", add=TRUE, lwd=2, col="grey40")
 @
-\caption{Spectral variance may be reduced by removing the effect
-on an AR process, as is shown for the MAGNET data using
-\Rcmd{pilot\_spec}.  The dotted line is the adaptively estimated spectrum
-from Figure \ref{fig:psdcomp}.}
+\caption{AR response spectrum for the MAGNET dataset produced by 
+\Rcmd{pilot\_spec}. Overlain on the figure is the adaptive estimation 
+from Figure \ref{fig:psdcomp} (dotted line),
+and the results from \Rcmd{spec.ar} in dark grey; the shift is due to a
+normalization difference.}
 \label{fig:arspecvar}
 \end{center}
 \end{figure}
@@ -600,7 +601,7 @@ only slight improvements with logarithmic number of tapers.
 
 \begin{figure}[htb!]
 \begin{center}
-<<eval=TRUE, echo=TRUE, fig.width=7, fig.height=4.5, label=SPECERR>>=
+<<eval=TRUE, echo=TRUE, fig.width=5, fig.height=4.5, label=SPECERR>>=
 sp <- spectral_properties(as.tapers(1:50), p=0.95, db.ci=TRUE)
 par(las=1)
 plot(stderr.chi.upper ~ taper, sp, type="s", 
@@ -619,13 +620,16 @@ legend("topright",
 	  "approximation"),
 lwd=c(1,3,3), col=c("black","black","red"), bg="white")
 @
-\caption{Additive spectral uncertainties by number of tapers.
+\caption{Additive spectral uncertainties by number of tapers
+needed to create 95\% confidence intervals.
 These quantized curves are found
 by evaluating the $\chi{}_{\nu}^2$ distribution, where $\nu$ is
 the number of degrees of freedom (two per taper).  
-The black lines show uncertainties for a coverage probability of 0.95.
+%The black lines show uncertainties for a coverage probability of 0.95.
 The thick, red line shows an approximation to these uncertainties
 based on $1/\sqrt{\nu-1}$, which is accurate to within a few percent in most cases.
+The vertical dotted-line shows the number of tapers need to make
+the width less than 3 decibels. 
 }
 \label{fig:psderr}
 \end{center}
@@ -701,14 +705,14 @@ layout(matrix(c(1,2),1,2,byrow=TRUE), heights=c(2,2), widths=c(3,0.5), respect=T
 plot(frq, relp,
      main="Percent change in spectral resolution",
      col="light grey", 
-     ylim=yl<-c(0,50),
+     ylim=yl<-c(0,35),
      type="h", xaxs="i", yaxs="i", 
      ylab="dB", xlab="frequency, 1/km")
 lines(frq, relp)
 text(0.25, 45, "Adaptive relative to fixed", cex=0.9)
 par(mar=c(4,0,2,2))
 # empirical distribution of values
-boxplot(relp, main=sprintf("%.01f",median(relp)), axes=FALSE, ylim=yl, yaxs="i", notch=TRUE)
+boxplot(relp, range=0, main=sprintf("%.01f",median(relp)), axes=FALSE, ylim=yl, yaxs="i", notch=TRUE)
 axis(4)
 @
 \caption{Relative changes in resolution of the adaptive method
@@ -735,7 +739,7 @@ uncertainties change with each iteration.
 we repeat the adaptive spectral analysis, 
 and then bring the stage history into the \Rcmd{.GlobalEnv} environment:
 <<eval=TRUE, echo=TRUE, label="Get adaptive history.">>=
-pspectrum(ats_lm, niter=6, plot=FALSE)
+pspectrum(ats_lm, niter=4, plot=FALSE)
 str(AH <- get_adapt_history())
 @
 Followed by some trivial manipulation:
@@ -755,21 +759,22 @@ Figure \ref{fig:psdhist}.
 
 \begin{figure}[htb!]
 \begin{center}
-<<eval=TRUE, echo=FALSE, fig.width=6.0, fig.height=4.0, label=HIST1>>=
+<<eval=TRUE, echo=FALSE, fig.width=4.8, fig.height=2.3, label=HIST1>>=
 seqcols <- seq_len(numit)
 itseq <- seqcols - 1
 toadd <- matrix(rep(itseq, numd), ncol=numit, byrow=T)
-par(xpd=TRUE, oma=rep(0,4), mar=c(1,4,2,2))
-matplot(Freqs, StgPsd + (sc<-9)*toadd, type="l", lty=1, lwd=2, col="black",
+par(xpd=TRUE, oma=rep(0,4), mar=c(1,4,3,2))
+matplot(Freqs, StgPsd + (sc<-6)*toadd, type="l", lty=1, lwd=2, col="black",
              main="Adaptive estimation history", ylab="", xlab="",
              yaxt="n", frame.plot=FALSE)
-text(0.52, 1.05*sc*itseq, itseq)
-lines(c(2,1,1,2)*0.01,c(0,0,7,7))
-text(.06, 3.5, "7 dB")
-mtext("Spectrum optimization stages", line=-0.8)
+text(0.52, 1.06*sc*itseq, itseq, cex=0.9)
+lines(-1*c(1.5,1,1,1.5)*0.02,c(0,0,7,7))
+text(-.06, 3.5, "7 dB", cex=0.8)
+mtext("(a)", font=2, adj=0, line=0.6)
+mtext("PSDs by stage", line=-0.4)
 @
-<<eval=TRUE, echo=FALSE, fig.width=6.0, fig.height=3.0, label=HIST2>>=
-par(xpd=TRUE, las=1, oma=rep(0,4), mar=c(4,4,2,2))
+<<eval=TRUE, echo=FALSE, fig.width=4.8, fig.height=2.1, label=HIST2>>=
+par(xpd=TRUE, las=1, oma=rep(0,4), mar=c(1,4,2,2))
 Cols <- rev(rev(brewer.pal(9, "PuBuGn"))[seqcols])
 invisible(lapply(rev(seqcols), FUN=function(mcol, niter=numit, Frq=Freqs, Dat=StgTap, cols=Cols){
   iter <- (niter+1)-mcol
@@ -777,23 +782,57 @@ invisible(lapply(rev(seqcols), FUN=function(mcol, niter=numit, Frq=Freqs, Dat=St
   icol <- Cols[mcol]
   if (iter==1){
     plot(Frq, y, type="h", col=icol, 
-           main="", ylab="", xlab="Spatial frequency",
-           ylim=c(0,550), yaxs="i", frame.plot=FALSE)
+           main="", ylab="", 
+           xlab="", #Spatial frequency",
+           ylim=c(0,650), yaxs="i", frame.plot=FALSE)
   } else {
     lines(Frq, y, type="h", col=icol)
   }
-  lines(Frq, y, type="l",  lwd=0.9)
-  x <- (c(0,1)+iter-1)*.05+0.075
-  y <- c(545,545,600,600,545)
-  text(mean(x),max(y)-1.7*diff(range(y)), mcol-1)
+  if (iter >= mcol){
+    yf <- Dat[,(mcol+2)]
+    lcol <- Cols[(mcol+2)]
+    lines(Frq, yf, lty=3)
+  }
+  lines(Frq, y)
+  #print(c(iter,mcol)) #1 5, 2 4, 3 3, 4 2, 5 1.
+  x <- (c(0,1)+mcol)*.05+0.075
+  y <- c(600,600,655,655,600)
+  text(mean(x),max(y)-1.65*diff(range(y)), mcol-1, cex=0.9)
   polygon(c(x,rev(x),x[1]),y,border="black",col=icol)
 }))
-mtext("Taper optimization stages", line=1)
+mtext("(b)", font=2, adj=0, line=0.5)
+mtext("Tapers by stage", line=0.5)
 @
+<<eval=TRUE, echo=FALSE, fig.width=4.8, fig.height=2.7, label=HIST3>>=
+par(xpd=TRUE, las=1, oma=rep(0,4), mar=c(3.5,4,2,2))
+#Cols <- rev(rev(brewer.pal(9, "PuBuGn"))[seqcols])
+invisible(lapply(rev(seqcols), FUN=function(mcol, niter=numit, Frq=Freqs, Tap=StgTap, cols=Cols){
+  iter <- (niter+1)-mcol
+  tap <- Tap[,mcol]
+  icol <- Cols[mcol]
+  spp <- spectral_properties(as.tapers(tap), db.ci=TRUE)
+  psppu <- create_poly(Frq, tap*0-(iter*0.76)**2, spp$stderr.chi.upper)
+  if (iter==1){
+	 plot(psppu$xx, psppu$yy, type="l", col=NA,
+	 	main="", ylab="", xlab="", yaxt="n",
+	    ylim=18*c(-1,0), 
+	    yaxs="i", frame.plot=FALSE)
+  }
+  polygon(psppu$xx, psppu$yy, col=icol, border = "black") #, lwd = 0.2)
+}))
+mtext("(c)", font=2, adj=0, line=0.6)
+lines(-1*c(1.5,1,1,1.5)*0.02, -1*c(0,0,7,7)-10)
+text(-0.06, -3.5-10, "7 dB", cex=0.8)
+mtext("Uncertainties by stage", line=0.6)
+mtext("Spatial frequency, 1/km", side=1, line=2.3)
+text(0.25, -14.5, "(uniform tapers)", font=3, cex=0.7)
+@
+
 \caption{Adaptive spectral estimation history.
-Top: PSD series for each stage of the adaptive method, 
+(A) PSD series for each stage of the adaptive method, 
 offset by a few decibels for visualization purposes.
-Bottom: Filled polygons showing the number of tapers at each stage.
+Filled polygons are shown in (B) for the number of tapers at each stage,
+and (C) the relative uncertainties of the PSDs.
 }
 \label{fig:psdhist}
 \end{center}

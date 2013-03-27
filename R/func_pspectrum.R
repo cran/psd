@@ -15,7 +15,7 @@
 #' 
 #' @param x vector; series to estimate PSD for.
 #' @param x.frqsamp scalar; the sampling rate (e.g. Hz) of the series \code{x}.
-#' @param ntap_pilot scalar; the number of sine tapers to use in the pilot spectrum estimation.
+#' @param ntap.init scalar; the number of sine tapers to use in the pilot spectrum estimation.
 #' @param niter scalar; the number of adaptive iterations to execute after the pilot spectrum.
 #' @param AR logical; should the effects of an AR model be removed from the pilot spectrum?
 #' @param Nyquist.normalize  logical; should the units be returned on Hz, rather than Nyquist?
@@ -27,11 +27,11 @@
 #' \code{"final_psd"} in the working environment.
 #'
 #' @example inst/Examples/rdex_pspectrum.R
-pspectrum <- function(x, x.frqsamp=1, ntap_pilot=7, niter=5, AR=FALSE, Nyquist.normalize=TRUE, verbose=TRUE, no.history=FALSE, plot=FALSE, ...) UseMethod("pspectrum")
+pspectrum <- function(x, x.frqsamp=1, ntap.init=7, niter=3, AR=FALSE, Nyquist.normalize=TRUE, verbose=TRUE, no.history=FALSE, plot=FALSE, ...) UseMethod("pspectrum")
 #' @rdname pspectrum
 #' @method pspectrum default
 #' @S3method pspectrum default
-pspectrum.default <- function(x, x.frqsamp=1, ntap_pilot=7, niter=5, AR=FALSE, Nyquist.normalize=TRUE, verbose=TRUE, no.history=FALSE, plot=FALSE, ...){
+pspectrum.default <- function(x, x.frqsamp=1, ntap.init=7, niter=3, AR=FALSE, Nyquist.normalize=TRUE, verbose=TRUE, no.history=FALSE, plot=FALSE, ...){
   stopifnot(length(x)>1)
   #
   adapt_message <- function(stage, dvar=NULL){
@@ -58,7 +58,7 @@ pspectrum.default <- function(x, x.frqsamp=1, ntap_pilot=7, niter=5, AR=FALSE, N
       }
       ##
       ordAR <- ifelse(AR, 100, 0)
-      pilot_spec(x, x.frequency=x.frqsamp, ntap=ntap_pilot, 
+      pilot_spec(x, x.frequency=x.frqsamp, ntap=ntap.init, 
                  remove.AR=ordAR, verbose=verbose, plot=plotpsd_)
       # ensure it's in the environment
       Pspec <- psd:::psd_envGet("pilot_psd")
@@ -72,18 +72,23 @@ pspectrum.default <- function(x, x.frqsamp=1, ntap_pilot=7, niter=5, AR=FALSE, N
         psd:::new_adapt_history(niter)
         psd:::update_adapt_history(0, Pspec$taper, Pspec$spec, Pspec$freq)
       }
-      #xo <- 0 # to prevent passing orig data back/forth
+      xo <- 0 # to prevent passing orig data back/forth
     } else {
       # enforce no verbosity
       rverb <- ifelse(stage > 0, FALSE, TRUE)
       ## calculate optimal tapers
+      if (rverb) rm(kopt)
+      tapcap <- 1000 # absolute limit
       kopt <- riedsid(Pspec, verbose=rverb, ...)
+      kopt[kopt>tapcap] <- tapcap
       stopifnot(exists('kopt'))
       ## reapply to spectrum
-      if (stage==niter & plot){
-        plotpsd_ <- TRUE
-        #xo <- x
-        #rm(x)
+      if (stage==niter){
+        xo <- x
+        rm(x)
+        if (plot){
+          plotpsd_ <- TRUE
+        }
       }
       # preproc done in pilot_spec
       Pspec <- psdcore(X.d=xo, X.frq=x.frqsamp, ntaper=kopt, 
@@ -114,14 +119,13 @@ pspectrum.default <- function(x, x.frqsamp=1, ntap_pilot=7, niter=5, AR=FALSE, N
 #'
 #' The default behaviour (\code{remove.AR <= 0}) is to remove the standard linear 
 #' model \eqn{[f(x) = \alpha x + \beta]} from the data; however,
-#' the user can remove the effect of an autoregressive process by specifiying
+#' the user can model the effect of an autoregressive process by specifiying
 #' \code{remove.AR}.
 #'
 #' @section Removing an AR effect from the spectrum:
 #' If \code{remove.AR > 0} the argument is used as \code{AR.max} in 
-#' \code{\link{prewhiten}}, from which an AR spectrum is calculated using
-#' the best fitting model; this is removed from the spectrum calculated
-#' with the full data.
+#' \code{\link{prewhiten}}, from which an AR-response spectrum is calculated using
+#' the best fitting model.
 #'
 #' If the value of \code{remove.AR} is too low the spectrum 
 #' could become distorted,
@@ -130,13 +134,19 @@ pspectrum.default <- function(x, x.frqsamp=1, ntap_pilot=7, niter=5, AR=FALSE, N
 #' value of \code{remove.AR} will be restricted to within the 
 #' range \eqn{[1,100]}.}
 #' If the AR order is much larger than this, it's unclear how \code{\link{prewhiten}}
-#' will perform.
+#' will perform and whether the AR model is appropriate.
+#'
+#' \emph{Note that this function does not produce a parametric spectrum estimation; rather,
+#' it will return the amplitude response of the best-fitting AR model as \code{spec.ar}
+#' would. \strong{Interpret these results with caution, as an AR response spectrum
+#' can be misleading.}}
 #'
 #' @name pilot_spec
 #' @aliases pilot_spectrum spec.pilot
 #' @export
 #' @author A.J. Barbour <andy.barbour@@gmail.com>
 #' @seealso \code{\link{psdcore}}, \code{\link{prewhiten}}
+#' @seealso Documentation for \code{spec.ar}.
 #'
 #' @param x  vector; the data series to find a pilot spectrum for
 #' @param x.frequency  scalar; the sampling frequency (e.g. Hz) of the series
@@ -215,14 +225,14 @@ pilot_spec.default <- function(x, x.frequency=1, ntap=7, remove.AR=0, plot=FALSE
     if (REMAR){
       par(las=1)
       plot(Ospec, log="dB", col="red", main="Pilot spectrum estimation")
-      mtext(sprintf("(with AR(%s) correction)", ordAR), line=0.4)
+      mtext(sprintf("(with AR(%s) response)", ordAR), line=0.4)
       Pspec_ar$spec <- Pspec_ar$spec * mARs
       plot(Pspec_ar, log="dB", col="blue", add=TRUE)
       plot(Pspec, log="dB", add=TRUE, lwd=2)
       legend("bottomleft", 
              c("original PSD",
                sprintf("AR-innovations PSD\n(mean %.01f +- %.01f dB)", dB(mARs), dB(sqrt(arvar))/4),
-               "AR-corrected PSD"), 
+               "AR-filter response"), 
              lwd=2, col=c("red","blue","black"))
     } else {
       plot(Pspec, log="dB", main="Pilot spectrum estimation")
