@@ -5,6 +5,7 @@
 %%\newcommand{\Rlogo}{\if{html}{\figure{../../html/logo.jpg}}\if{latex}{\figure{logo.jpg}{options: width=0.5in}}}
 \newcommand{\CRANpkg}{\href{http://CRAN.R-project.org/package=#1}{\pkg{#1}}}
 \newcommand{\psd}{\CRANpkg{psd}}
+\newcommand{\citation}{\href{http://dx.doi.org/10.1016/j.cageo.2013.09.015}{10.1016/j.cageo.2013.09.015}}
 
 \name{psd}
 \title{News for package 'psd'}
@@ -12,11 +13,22 @@
 
 % template vim:5Y
 %
-%\section{CHANGES IN \psd{} VERSION 0.3-2 (2013-03-27)}{
+%\section{CHANGES IN \psd{} VERSION X.Y-Z (XXXX-YY-ZZ)}{
 %  \itemize{ \item \code{} }
 %}
 %
 
+\section{CHANGES IN \psd{} VERSION 0.4-1 (2014-04-15)}{
+  \itemize{
+  	\item We have published a paper in Computers \& Geosciences regarding
+	\psd{}, and the citation is up to date: \code{citation('psd')}
+	If you cannot access the publication, contact A.~J.~Barbour
+	for a reprint.
+  	\item Fixed an example which was causing CRAN-buildcheck errors.
+	\item Fixed a small error in the normalization vignette -- thanks 
+	      to Richard Gaal for spotting this.
+  }
+}
 %
 %
 \section{CHANGES IN \psd{} VERSION 0.4-0 (2013-09-19)}{
