@@ -1,5 +1,5 @@
-#RDEX#\dontrun{
-require(psd)
+\dontrun{#REX
+library(psd)
 ##
 ## Riedel-Sidorenko--Parker taper optimization
 ##
@@ -20,15 +20,16 @@ ried <- dB(riex, invert=TRUE)
 #
 # optimize tapers
 rtap <- riedsid(riex, ntaper=ntap)
+rtap2 <- riedsid2(riex, ntaper=ntap)
 #
 # plot
 op <- par(no.readonly = TRUE)
 par(mfrow=c(2,1), mar=rep(1.3,4), mai=rep(0.6,4))
 # ... the mock spectrum
-plot(riex, type="h", xaxs="i", ylim=c(0,200)) 
+plot(riex, type="h", xaxs="i", ylim=c(0,200), main='Pseudo-spectrum') 
 # ... the optimal tapers
-plot(rtap, log="y") 
+plot(rtap2, main='Optimal tapers') 
 # original tapers:
-lines(as.tapers(rep.int(ntap,nd)), col="blue")
+lines(rtap, col="red")
 par(op)
-#RDEX#}
+}#REX

@@ -1,9 +1,9 @@
 /*
-#   psd: 
+#   Apply constraints on tapers using simple derivatives
 #
-#   Copyright (C) 2013  Andrew J. Barbour andy.barbour @ gmail.com
+#     Copyright (C) 2013-2015  Andrew J. Barbour *
 #
-#   Robert L. Parker authored the original algorithm.
+#     Robert L. Parker authored the original matlab algorithm
 #
 #   This program is free software: you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -17,42 +17,31 @@
 #
 #   You should have received a copy of the GNU General Public License
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
 */
 
 #include <stdio.h>
-// R specific libs:
 #include <R.h>  
 #include <Rinternals.h>
 #include <Rdefines.h>
 
-/* Sending R integer vectors to C using .Call */
 SEXP rlp_constrain_tapers(SEXP R_ntaps, SEXP R_maxslope)
 {
-    // http://r.789695.n4.nabble.com/protect-unprotect-howto-in-C-code-td911033.html
-    // http://stackoverflow.com/questions/4106174/where-can-i-learn-to-how-to-write-c-code-to-speed-up-slow-r-functions
-    // PROTECTION [ ]
-    //
-    //PROTECT(R_maxslope = AS_INTEGER(R_maxslope));
-    //PROTECT(c_ntaps = AS_NUMERIC(R_ntaps));
-    double * c_ntaps=REAL(R_ntaps);
+    // copy semantics was leading to changes in env vars
+    // so we now protect and duplicate
+    //  http://adv-r.had.co.nz/C-interface.html
+    SEXP R_ntaps_copy = PROTECT(duplicate(R_ntaps));
+    double * c_ntaps=REAL(R_ntaps_copy);
+    UNPROTECT(1);
     int maxslope=REAL(R_maxslope)[0];
-    int ssize=LENGTH(R_ntaps);
+    int ssize=LENGTH(R_ntaps_copy);
     SEXP ntap_con;
-    //--------------------------------------------//
-    //
-    //--------------------------------------------//
-    int state, i, l;
-    // forward indices
-    int i_min_f = 1, i_max_f = ssize - 1;
-    // reverse indices
-    int i_min_r = i_max_f - 1, i_max_r = 0;
-    // num-tapers and slopes
+    int state, i, im, msize = ssize - 1;
     double slope;
-    int ntap_c, ntap_p, ntap_fix;
-    if(maxslope <= 0)
+
+    if (maxslope <= 0)
         Rf_error( "max slope must greater than zero" );
-    //
-    double working_space[ssize];
+  
     //
     // RLPs algorithm
     //  #  Scan forward to bound slopes >= 1
@@ -91,47 +80,44 @@ SEXP rlp_constrain_tapers(SEXP R_ntaps, SEXP R_maxslope)
     // 	}
     // APPLY CONSTRAINTS
     //     FORWARD:
+    
     state = 0;
-    for (i = i_min_f; i <= i_max_f; i++){
+    for (i = 1; i < ssize; i++){
+        im = i - 1;
         if (state == 0){
-            slope = c_ntaps[i] - c_ntaps[i-1];
-			if (slope >= maxslope) {
-				state = 1;
-				//printf("sub f-a\n");
-				c_ntaps[i] = c_ntaps[i-1] + maxslope; // was orig 1
-			}
+          slope = c_ntaps[ i ] - c_ntaps[ im ];
+    			if (slope >= maxslope) {
+    				state = 1;
+    				c_ntaps[ i ] = c_ntaps[ im ] + maxslope;
+    			}
         } else {
-			if (c_ntaps[i] >= c_ntaps[i-1] + maxslope) {
-			    //printf("sub f-b\n");
-				c_ntaps[i] = c_ntaps[i-1] + maxslope;
-			} else {
-				state = 0;
-			}
+    			if (c_ntaps[ i ] >= c_ntaps[ im ] + maxslope) {
+    				c_ntaps[ i ] = c_ntaps[ im ] + maxslope;
+    			} else {
+    				state = 0;
+    			}
         }
-	    //printf("f %i %f %i %f\n", i, slope, state, c_ntaps[i]);
     }
     // and BACKWARD:
-    for (i = i_min_r; i >= i_max_r; i--){
+    state = 0;
+    // was msize - 1
+    for (i = msize; i >= 1; i--){
+        im = i - 1;
         if (state == 0){
-            slope = c_ntaps[i-1] - c_ntaps[i];
-			if (slope >= maxslope) {
-				state = 1;
-				//printf("sub r-a\n");
-				c_ntaps[i-1] = c_ntaps[i] + maxslope; // was orig 1
-			}
+            slope = c_ntaps[ im ] - c_ntaps[ i ];
+            if (slope >= maxslope) {
+            	state = 1;
+            	c_ntaps[ im ] = c_ntaps[ i ] + maxslope;
+            }
         } else {
-			if (c_ntaps[i-1] >= c_ntaps[i] + maxslope) {
-			    //printf("sub r-b\n");
-				c_ntaps[i-1] = c_ntaps[i] + maxslope;
-			} else {
-				state = 0;
-			}
+            if (c_ntaps[ im ] >= c_ntaps[ i ] + maxslope) {
+            	c_ntaps[ im ] = c_ntaps[ i ] + maxslope;
+            } else {
+            	state = 0;
+            }
         }
-	    //printf("f %i %f %i %f\n", i, slope, state, c_ntaps[i]);
     }
-    // use t
     PROTECT(ntap_con = allocVector(REALSXP, ssize));
-    // C arrays begin index zero
     for (i = 0; i < ssize; i++){
         REAL(ntap_con)[i] = c_ntaps[i];
     }
@@ -140,9 +126,8 @@ SEXP rlp_constrain_tapers(SEXP R_ntaps, SEXP R_maxslope)
 }
 
 // http://www.sfu.ca/~sblay/R-C-interface.txt
-// V.:
-/* useCall3.c                                    */
-/* Getting an integer vector from C using .Call  */
+// Getting an integer vector from C using .Call
+// to work with real numbers, replace int with double and INTEGER with NUMERIC)
 SEXP setInt() {
     SEXP myint;
     int *p_myint; 
@@ -153,4 +138,4 @@ SEXP setInt() {
     UNPROTECT(1);
     return myint;
 }
-// to work with real numbers, replace int with double and INTEGER with NUMERIC
+

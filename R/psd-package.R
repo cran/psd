@@ -1,28 +1,28 @@
-#' Perform adaptive estimation 
-#' of the power spectral density (PSD) using the sine multitapers in which
-#' the number of tapers (and hence the resolution and uncertainty) 
-#' vary according to spectral shape. 
-#' The main function to be used 
-#' is \code{\link{pspectrum}}.
+#' @title Adaptive power spectral density estimation using optimal sine multitapers
+#' 
+#' @description
+#' Estimate the power spectral density (PSD) 
+#' of a timeseries using the sine multitapers, adaptively; the number of tapers 
+#' (and hence the resolution and uncertainty) vary according to 
+#' spectral shape. The main function to be used is \code{\link{pspectrum}}.
 #'
 #' @details
 #' In frequency ranges where the spectrum  (\eqn{S})
 #' is relatively flat, more tapers are taken and so a higher accuracy is 
 #' attained at the expense of lower frequency resolution. 
 #' The program makes a pilot estimate of the spectrum, then uses
-#' Riedel and Sidorenko's estimate of the MSE (minimum square error) value, 
+#' Riedel and Sidorenko's (1995) estimate of the MSE (minimum square error), 
 #' which is based on an estimate of the second derivative of the PSD (\eqn{S''}). 
-#' The process is repeated \code{niter} times with a default of \code{niter=5}. 
-#' Further iteration may be necessary to reach convergence, or an acceptably low
-#' spectral variance. Although the term "acceptable" is rather subjective, one can 
-#' usually detect an unconverged state by a rather jagged appearence of the spectrum;
-#' this is rather uncommon in our experience.
+#' The process is repeated \code{niter} times; further iteration may be necessary 
+#' to reach convergence, or an acceptably low spectral variance. 
+#' In this context the term "acceptable" is rather subjective: one can 
+#' usually detect an unconverged state by a rather jagged appearence of the spectrum,
+#' but this is uncommon in our experience.
 #'
 #' \subsection{Adaptive estimation}{
 #' The adaptive process used is as follows. A quadratic fit to the logarithm of the
-#' PSD within an 
-#' adaptively determined frequency band is used to find an estimate of the local second 
-#' derivative of the spectrum. This is used in an equation like R-S eq (13) for 
+#' PSD within an adaptively determined frequency band is used to find an estimate of the local second 
+#' derivative of the spectrum. This is used in an equation like R-S equation (13) for 
 #' the MSE taper number, with the difference that a parabolic weighting is applied with 
 #' increasing taper order. Because the FFTs of the tapered series can be found by 
 #' resampling the FFT of the original time series (doubled in length and padded with zeros) 
@@ -46,15 +46,20 @@
 #' @docType package
 #' @name psd-package
 #' @aliases psd spec.psd
-#' @title Adaptively estimate power spectral densities of an optimally tapered series.
 #' 
-#' @author Robert L. Parker and Andrew J. Barbour <andy.barbour@@gmail.com> 
+#' @author Andrew J. Barbour <andy.barbour@@gmail.com> and Robert L. Parker
 #' 
-#' @import fftw RColorBrewer signal zoo
+#' 
 #' @useDynLib psd
+#' @exportPattern "^[[:alpha:]]+"
+#' @import RColorBrewer signal zoo
+#' @importFrom Rcpp evalCpp
 #'
-#' @references Parker, R. L., \emph{PSD}, Program documentation. \emph{Maintained Software}, N.p. 11 Nov. 2011,
-#' Web. 17 Jan. 2013, <\url{http://igppweb.ucsd.edu/\%7Eparker/Software/\#PSD}>.
+#'
+#' @references Barbour, A. J. and R. L. Parker, (2014), 
+#' psd: Adaptive, sine multitaper power spectral density estimation for R,
+#' \emph{Computers and Geosciences}, \strong{63}, 1--8,
+#' \url{http://dx.doi.org/10.1016/j.cageo.2013.09.015}
 #'
 #' @references Percival, D. B., and A.T. Walden (1993),
 #' Spectral analysis for physical applications,
@@ -63,22 +68,13 @@
 #' @references Prieto, G. A., R. L. Parker, D. J. Thomson, F. L. Vernon, and R. L. Graham  (2007), 
 #' Reducing the bias of multitaper spectrum estimates,
 #' \emph{Geophysical Journal International}, \strong{171}, 1269--1281,
-#' doi: 10.1111/j.1365-246X.2007.03592.x
+#' \url{http://gji.oxfordjournals.org/content/171/3/1269}
 #' 
 #' @references Riedel, K. S., & Sidorenko, A. (1995), 
 #' Minimum bias multiple taper spectral estimation,
 #' \emph{Signal Processing, IEEE Transactions on}, \strong{43}(1), 188--195.
-#
-#' @references Riedel, K. S. (1996),
-#' Adaptive smoothing of the log-spectrum with multiple tapering,
-#' \emph{Signal Processing, IEEE Transactions on}, \strong{44}(7), 1794--1800.
 #'
-#' @references Walden, A. T., and  E. J. McCoy, and D. B. Percival (1995),
-#' The effective bandwidth of a multitaper spectral estimator,
-#' \emph{Biometrika}, \strong{82}(1), 201--214.
-# \url{http://biomet.oxfordjournals.org/content/82/1/201}
-#'
-#' @seealso \code{\link{pspectrum}}
+#' @seealso \code{\link{psdcore}} and \code{\link{riedsid}}
 #'  
 NULL
 .psdEnvName = ".psdEnv"
@@ -88,7 +84,7 @@ NULL
 ## Datasets
 ##
 
-#' A single line of Project MAGNET horizontal field intensity.
+#' A single line of Project MAGNET horizontal field intensity
 #' 
 #' The Project MAGNET mission 
 #' provided a wealth of airborne-magnetometer data

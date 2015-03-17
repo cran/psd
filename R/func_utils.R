@@ -2,179 +2,201 @@
 #'
 #' @description \emph{The various utility functions are:}
 #'
-#' @keywords methods S3methods utilities
-#' @author A.J. Barbour <andy.barbour@@gmail.com>
-#' @rdname psd-utilities
+#' @author A.J. Barbour
 #' @name psd-utilities
-#' @seealso \code{\link{psd-package}}, \code{\link{as.tapers}}
+#' @seealso \code{\link{psd-package}}, \code{\link{as.tapers}}, \code{\link{modulo_floor}}
+#' 
 #' @example inst/Examples/rdex_utilities.R
 NULL
 
-#' @description \code{vardiff} returns the variance of the first (or second) 
-#' difference of the series. \code{varddiff} is a convenience wrapper
+#' @description \code{\link{vardiff}} returns the variance of the first (or second) 
+#' difference of the series. \code{\link{varddiff}} is a convenience wrapper
 #' to return variance for the second difference.
 #' @rdname psd-utilities
 #' @export
-#' @keywords utilities first-difference variance
-#' @param Xd object to difference
 #' @param double.diff logical; should the double difference be used instead?
-vardiff <- function(Xd, double.diff=FALSE){
-  dorder <- 1
-  if (double.diff) dorder <- 2
-  stats::var(diff(Xd, differences=dorder))
+vardiff <- function(x, double.diff=FALSE){
+  dorder <- ifelse(double.diff, 2, 1)
+  stats::var(diff(x, differences=dorder))
 }
 #' @rdname psd-utilities
 #' @export
-#' @keywords utilities first-difference variance
-varddiff <- function(Xd) vardiff(Xd, double.diff=TRUE)
+varddiff <- function(x) UseMethod('varddiff')
+#' @rdname psd-utilities
+#' @export
+varddiff.spec <- function(x) varddiff(as.vector(x[['spec']]))
+#' @rdname psd-utilities
+#' @export
+varddiff.default <- function(x) vardiff(x, double.diff=TRUE)
 
-# @rdname psd-utilities
-# @export
-# @keywords utilities polygon
-#opar <- function() par(no.readonly=TRUE)
-# create_poly <- function(x, y, dy, from.lower=FALSE){
-#   xx <- c(x, rev(x))
-#   if (from.lower){
-#     yy <- c(y, rev(y+dy))
-#   } else {
-#     yy <- c(y+dy, rev(y-dy))
-#   }
-#   return(data.frame(xx=xx, yy=yy))
-# }
+#' @rdname psd-utilities
+#' @description \code{\link{create_poly}} generates an x-y sequence compatible for use with \code{\link{polygon}}
+#' @param x,y objects; in \code{\link{create_poly}} these are the vectors used to
+#' create a \code{\link{polygon}}-compatible sequence (\code{x} is sorted by default);
+#' in \code{\link{mod}} these are the "numerator" and "denominator", respectively.
+#' @param dy numeric; the distance from \code{y} to the top and bottom of
+#' the polygonal surfaces; see \code{from.lower}
+#' @param from.lower logical; should the bottom be \code{y} instead of \code{y+dy}, so that
+#' \code{dy} represents the distance from the lower surface?
+#' @export
+create_poly <- function(x, y, dy, from.lower=FALSE){
+  x <- sort(x)
+  xx <- c(x, rev(x))
+  yy <- if (from.lower){
+    c(y, rev(y+dy))
+  } else {
+    c(y+dy, rev(y-dy))
+  }
+  return(data.frame(x.x=xx, y.y=yy))
+}
 
-#' @description \code{dB} returns an object converted to decibels.
+#' @description \code{\link{dB}} returns an object converted to decibels.
 #' @details 
 #' Decibels are defined as \eqn{10 \log{}_{10} \frac{X_1}{X_2}}, 
 #' unless \code{is.power=TRUE} in which \eqn{\mathrm{db} X^2 \equiv 20 \log{}_{10} X^2}
 #' @rdname psd-utilities
-#' @param Rat numeric; A ratio to convert to decibels (\code{dB}).
+#' @param Rat numeric; the values -- ratios -- to convert to decibels (\code{dB}).
 #' @param invert logical; assumes \code{Rat} is already in decibels, so return ratio
 #' @param pos.only logical; if \code{invert=FALSE}, sets negative or zero values to NA
 #' @param is.power logical; should the factor of 2 be included in the decibel calculation?
 #' @export
 #' @aliases decibels db
-#' @keywords utilities normalization decibel
 dB <- function(Rat, invert=FALSE, pos.only=TRUE, is.power=FALSE){
-  CC <- 10
-  if (is.power) CC <- CC * 2
+  CC <- ifelse(is.power, 20, 10)
   if (invert) {
-    toret <- 10**(Rat/CC)
+    10 ** (Rat/CC)
   } else {
     if (pos.only) Rat[Rat <= 0] <- NA
-    toret <- CC*log10(Rat)
+    CC * log10(Rat)
   }
-  return(toret)
 }
 
-#' @description \code{char2envir} converts a character string of an environment 
-#' name to an evaluated name; whereas, \code{envir2char} converts an environment 
-#' name to a character string.
-#' 
-#' @note \code{char2envir} ensures the \code{envchar} object is a character, 
-#' so that something
-#' is not unintentionally evaluated; \code{envir2char} simply deparses the
-#' object name.
-#' 
-#' @rdname psd-utilities
-#' @export
-#' @keywords utilities environment
-#' @param envchar An object with class 'character'.
-#' @param envir An object of class 'environment'.
-#' @return \code{char2envir} returns the result of evaluating the object: an 
-#' environment object; \code{envir2char} returns the result of deparsing the 
-#' environment name: a character string.
-char2envir <- function(envchar){
-  stopifnot(is.character(envchar))
-  eval(as.name(envchar))
-}
-#' @rdname psd-utilities
-#' @export
-#' @keywords utilities environment
-envir2char <- function(envir){
-  stopifnot(is.environment(envir))
-  deparse(substitute(envir))
-}
-
-#' @description \code{vector_reshape} reshapes a vector into another vector.
+#' @description \code{\link{vector_reshape}} reshapes a vector into another vector.
 #' @rdname psd-utilities
 #' @name vector_reshape
-#' @param x  An object to reshape (\code{vector_reshape}).
 #' @param vec.shape  choice between horizontally-long or vertically-long vector.
 #' @return \code{vector_reshape} returns a "reshaped" vector, meaning it has
 #' had it's dimensions changes so that it has either one row 
 #' (if \code{vec.shape=="horizontal"}), or one column (\code{"vertical"}).
 #' @export
-#' @keywords utilities vector-manipulation matrix-manipulation
-vector_reshape <- function(x, vec.shape=c("horizontal","vertical")) UseMethod("vector_reshape")
-#' @rdname psd-utilities
-#' @method vector_reshape default
-#' @S3method vector_reshape default
-vector_reshape.default <- function(x, vec.shape=c("horizontal","vertical")){
+vector_reshape <- function(x, vec.shape=c("horizontal","vertical")) {
   x <- as.vector(x)
   vec.shape <- match.arg(vec.shape)
   nrow <- switch(vec.shape, "horizontal"=1, "vertical"=length(x))
   return(matrix(x, nrow=nrow))
 }
 
-#' @description \code{colvec} returns the object as a vertically long vector; whereas
-#' \code{rowvec} returns the object as a horizontally long vector.
+#' @description \code{\link{colvec}} returns the object as a vertically long vector; whereas
+#' \code{\link{rowvec}} returns the object as a horizontally long vector.
 #' @details \code{colvec, rowvec} are simple wrapper functions to \code{vector_reshape}.
 #' @rdname psd-utilities
 #' @export
-#' @keywords utilities vector-manipulation matrix-manipulation
 colvec <- function(x) vector_reshape(x, "vertical")
 
 #' @rdname psd-utilities
-#' @aliases as.rowvec
 #' @export
-#' @keywords utilities vector-manipulation matrix-manipulation
 rowvec <- function(x) vector_reshape(x, "horizontal")
 
-#' @description \code{is.spec} reports whether an object has class S3 class 'spec', as
-#' would one returned by, for example, \code{spectrum}.
-#' @rdname psd-utilities
+#' @description \code{\link{is.spec}} and \code{\link{is.amt}} report whether an object has class \code{'spec'} or \code{'amt'}, as
+#' would one returned by, for example, \code{\link{spectrum}} or \code{\link{psdcore}}.
+#' 
+#' \code{\link{is.tapers}} reports whether an object has class \code{'tapers'}, as
+#' would one returned by, for example, \code{\link{as.tapers}}.
+#' 
 #' @param Obj  An object to test for class inheritance.
-#' @return \code{is.spec} and \code{is.tapers} both return
-#' logicals about whether or not the object does have class 'spec' or 'tapers', 
-#' respectively
+#' @return \code{is.spec}, \code{is.amt}, and \code{is.tapers} return the output of \code{\link{inherits}}.
+#' @rdname psd-utilities
 #' @export
-#' @keywords utilities inherits is
 is.spec <- function(Obj) inherits(Obj, "spec")
 
-#' @description \code{is.tapers} reports whether an object has S3 class 'tapers', as
-#' would one returned by, for example, \code{\link{as.tapers}}.
-#' @export
-#' @keywords utilities inherits is
 #' @rdname psd-utilities
+#' @export
+is.amt <- function(Obj) inherits(Obj, 'amt')
+
+#' @rdname psd-utilities
+#' @export
 is.tapers <- function(Obj) inherits(Obj, "tapers")
 
-#' Numerical derivatives of a series based on a weighted, smooth spline representation.
+#' @description \code{\link{na_mat}} populates a matrix of specified dimensions 
+#' with \code{NA} values.
+#' @rdname psd-utilities
+#' @param nrow,ncol integer; the number of rows and/or columns to create
+#' @return \code{na_mat} returns a matrix of dimensions \code{(nrow,ncol)} with
+#' \code{NA} values, the representation of which is set by \code{NA_real_}
+#' @export
+na_mat <- function(nrow, ncol=1) {matrix(NA_real_, nrow, ncol)}
+
+#' @description \code{\link{zeros}} populate a column-wise matrix with zeros; whereas,
+#' \code{\link{ones}} populates a column-wise matrix with ones.  \emph{Note that 
+#' \code{n} is enforced to be at least 1 for both functions.}
+#' @rdname psd-utilities
+#' @export 
+zeros <- function(nrow) {
+  nrow <- max(1., abs(nrow))
+  matrix(0., nrow=nrow, ncol=1)
+}
+
+#' @rdname psd-utilities
+#' @export
+ones <- function(nrow) {
+  nrow <- max(1., abs(nrow))
+  matrix(1., nrow=nrow, ncol=1)
+}
+
+#' @description \code{\link{mod}} finds the modulo division of two values
 #' 
-#' @description \code{splineGrad} computes the numerical derivatives of a spline 
+#' @details Modulo division has higher order-of-operations ranking than other
+#' arithmetic operations; hence, \code{x + 1 \%\% y} is equivalent to
+#' \code{x + (1 \%\% y)} which can produce confusing results. \code{mod}
+#' is simply a series of \code{trunc} commands which
+#' reduces the chance for unintentionally erroneous results.
+#' 
+#' @note The performance of \code{\link{mod}} has not been tested against the 
+#' \code{\%\%} arithmetic method -- it may or may not be slower for large
+#' numeric vectors.
+#' 
+#' @references For \code{\link{mod}}: see Peter Dalgaard's explanation of 
+#' the non-bug (#14771) I raised (instead I should've asked it on R-help): 
+#' \url{https://bugs.r-project.org/bugzilla3/show_bug.cgi?id=14771\#c2}
+#' 
+#' @rdname psd-utilities
+#' @export
+#' @return \code{mod} returns the result of a modulo division, which is 
+#' equivalent to \code{(x) \%\% (y)}.
+mod <- function(x, y) {
+  stopifnot(is.numeric(c(x, y)))
+  ## modulo division
+  x1 <- trunc( trunc(x/y) * y)
+  z <- trunc(x) - x1
+  return(z)
+}
+
+
+#' Numerical derivatives of a series based on its smooth-spline representation
+#' 
+#' @description This computes the numerical derivatives of a spline 
 #' representation of the input series; differentiation of spline curves is 
 #' numerically efficient.
 #' 
+#' @details
 #' With smoothing, the numerical instability for "noisy" data can be drastically
-#' reduced, 
-#' since spline curves are
-#' inherently (at least) twice differentiable. See the \strong{Examples} for
-#' an illustration of this.
+#' reduced, since spline curves are inherently (at least) twice differentiable. 
 #' 
-#' @author A.J. Barbour <andy.barbour@@gmail.com>
+#' @author A.J. Barbour
 #' @name splineGrad
 #' @param dseq  numeric; a vector of positions for \code{dsig}.
 #' @param dsig  numeric; a vector of values (which will have a spline fit to them).
 #' @param plot.derivs  logical; should the derivatives be plotted?
-#' @param ... additional arguments passed to \code{smooth.spline}.
-#' @return A matrix with columns representing \eqn{x, f(x), f'(x), f''(x)}.
+#' @param ... additional arguments passed to \code{\link{smooth.spline}}
+#' @return A matrix with columns representing \eqn{x, f(x), f'(x), f''(x)}
 #' @export
-#' @keywords utilities spline-gradient numerical-derivative
-#' @seealso \code{smooth.spline}
+#' @seealso \code{\link{smooth.spline}}, \code{\link{constrain_tapers}}
 #' @example inst/Examples/rdex_splinegrad.R
-splineGrad <- function(dseq, dsig, plot.derivs=FALSE, ...) UseMethod("splineGrad")
+splineGrad <- function(dseq, dsig, ...) UseMethod("splineGrad")
+
 #' @rdname splineGrad
-#' @method splineGrad default
-#' @S3method splineGrad default
+#' @aliases splineGrad.default
+#' @export
 splineGrad.default <- function(dseq, dsig, plot.derivs=FALSE, ...){
   #
   # Use spline interpolation to help find an emprirical gradient
@@ -225,7 +247,7 @@ splineGrad.default <- function(dseq, dsig, plot.derivs=FALSE, ...){
   toret <- data.frame(x=dseq, y=dsig, 
                       dydx=fsigderiv, 
                       d2yd2x=fsigderiv2)
-                      #d2yd2x.alt=fsigderiv2.alt)
+  #d2yd2x.alt=fsigderiv2.alt)
   #
   if (plot.derivs){
     #     yl.u <- max(c(dsig,fsigderiv,fsigderiv2))#,fsigderiv2.alt))
@@ -252,80 +274,4 @@ splineGrad.default <- function(dseq, dsig, plot.derivs=FALSE, ...){
          col="blue", type="s", lwd=2.4, lty=3)
   }
   return(invisible(toret))
-}
-##
-
-#' @description \code{na_mat} populates a matrix of specified dimensions 
-#' with \code{NA} values.
-#' @rdname psd-utilities
-#' @param nrow integer; the number of rows to create.
-#' @param ncol integer; the number of columns to create (default 1).
-#' @return \code{na_mat} returns a matrix of dimensions \code{(nrow,ncol)} with
-#' \code{NA} values, the representation of which is set by \code{NA_real_}
-#' @export
-#' @keywords utilities vector-creation matrix-creation
-na_mat <- function(nrow, ncol=1) UseMethod("na_mat")
-#' @rdname psd-utilities
-#' @method na_mat default
-#' @S3method na_mat default
-na_mat.default <- function(nrow, ncol=1){matrix(NA_real_, nrow, ncol)}
-
-#' @description \code{zeros} populate a column-wise matrix with zeros; whereas,
-#' \code{ones} populates a column-wise matrix with ones.  \emph{Note that 
-#' \code{nrow} is enforced to be at least 1 for both functions.}
-#' @rdname psd-utilities
-#' @export 
-#' @keywords utilities vector-creation matrix-creation
-# params described by na_mat
-#' @return For \code{zeros} or \code{ones} respectively, a matrix vector 
-#' with \code{nrow} zeros or ones.
-zeros <- function(nrow) UseMethod("zeros")
-#' @rdname psd-utilities
-#' @method zeros default
-#' @S3method zeros default
-zeros.default <- function(nrow){stopifnot(!is.null(nrow)); nrow <- max(1,abs(nrow)); matrix(rep.int(0, nrow), nrow=nrow)}
-
-#' @rdname psd-utilities
-#' @export
-#' @keywords utilities vector-creation matrix-creation
-ones <- function(nrow) UseMethod("ones")
-#' @rdname psd-utilities
-#' @method ones default
-#' @S3method ones default
-ones.default <- function(nrow){stopifnot(!is.null(nrow)); nrow <- max(1,abs(nrow)); matrix(rep.int(1, nrow), nrow=nrow)}
-
-#' @description \code{mod} finds the modulo division of X and Y.
-#' 
-#' @details Modulo division has higher order-of-operations ranking than other
-#' arithmetic operations; hence, \code{x + 1 \%\% y} is equivalent to
-#' \code{x + (1 \%\% y)} which can produce confusing results. \code{mod}
-#' is simply a series of \code{trunc} commands which
-#' reduces the chance for unintentionally erroneous results.
-#' 
-#' @note The performance of \code{mod} has not been tested against the 
-#' \code{\%\%} arithmetic method -- it may or may not be slower for large
-#' numeric vectors.
-#' 
-#' @references For \code{\link{mod}}: see Peter Dalgaard's explanation of 
-#' the non-bug (#14771) I raised (instead I should've asked it on R-help): 
-#' \url{https://bugs.r-project.org/bugzilla3/show_bug.cgi?id=14771\#c2}
-#' 
-#' @param X numeric; the "numerator" of the modulo division
-#' @param Y numeric; the "denominator" of the modulo division
-#' @return \code{mod} returns the result of a modulo division, which is 
-#' equivalent to \code{(X) \%\% (Y)}.
-#' @export
-#' @keywords utilities modulo-division arithmetic-operations
-#' @rdname psd-utilities
-#' @aliases modulo
-mod <- function(X, Y) UseMethod("mod")
-#' @rdname psd-utilities
-#' @method mod default
-#' @S3method mod default
-mod.default <- function(X, Y){
-  stopifnot(is.numeric(c(X, Y)))
-  ## modulo division
-  X1 <- trunc( trunc(X/Y) * Y)
-  Z <- trunc(X) - X1
-  return(Z)
 }

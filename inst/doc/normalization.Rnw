@@ -1,10 +1,6 @@
-\documentclass[10pt]{article}
+\documentclass[11pt]{article}
 % !Rnw weave = knitr
-% sweave fig help:
-% http://users.stat.umn.edu/~geyer/Sweave/foo.pdf
-% borrowing design from roxygen -- AJB Jan 13
-
-%% \VignetteIndexEntry{Normalization of power spectral density estimates.}
+%% \VignetteIndexEntry{Normalization of power spectral density estimates}
 %% \VignetteEngine{knitr}
 
 \usepackage[T1]{fontenc}
@@ -20,42 +16,28 @@
 \usepackage{float}
 \usepackage{natbib}
 \usepackage{geometry}
-\usepackage{hyperref}
-%\usepackage{units}
 \geometry{verbose,tmargin=3cm,bmargin=5cm,lmargin=2.5cm,rmargin=2.5cm}
-%captions
 \usepackage[font=sf, labelfont={sf,bf}, margin=2cm]{caption}
-%
 \usepackage{color}
-%
-\usepackage{makeidx} % for indexing
-\makeindex % comment to have no index
+\usepackage{txfonts}
 %%
-\input{mathsyms}
+\input{supp_mathsyms}
 %%
 \newcommand{\SC}[1]{\textsc{#1}}
 \newcommand{\SCY}[0]{\SC{Yes}}
 \newcommand{\SCN}[0]{\SC{No}}
 \newcommand{\Rcmd}[1]{\texttt{#1}}
-\newcommand{\psd}[0]{\href{http://abarbour.github.com/psd/}{\color{blue}\Rcmd{psd}}}
+\newcommand{\psd}[0]{\href{http://www.github.com/abarbour/psd/}{\color{blue}\Rcmd{psd}}}
 \newcommand{\naive}[0]{na\"{\i}ve}
 \newcommand{\bidx}[1]{\index{#1}{\textbf{#1}}} 
 \newcommand{\idx}[1]{\index{#1}{#1}} 
-%% path, filename, caption, label
-\newcommand{\listing}[4]{        %
-  \begin{figure}[H]              %
-    \centering                   %
-    \VerbatimInput[numbers=left, %
-      frame=single,              %
-      label=#2]{#1}              %
-    \caption{#3}                 %
-    \label{#4}                   %
-  \end{figure}                   %
-}
+%
+\title{Normalization of Power Spectral Density estimates}
 \author{Andrew J. Barbour and Robert L. Parker}
-\title{Normalization of Power Spectral Density estimates.}
+%
 \begin{document}
 \maketitle
+%
 \begin{abstract}
   A vast and deep pool of
   literature exists on the subject of spectral 
@@ -77,7 +59,9 @@
   the spectrum estimator included in the base distribution of
   R: \Rcmd{stats::spectrum}.
 \end{abstract}
+
 \tableofcontents
+
 %%
 %%
 %%
@@ -406,7 +390,7 @@ an area equal to one.
 In Table \ref{tbl:norm} we give a summary of some
 of the quantities we have reviewed.
 
-\input{tbl_norms}
+\input{supp_norms}
 
 %%
 %%
@@ -690,7 +674,7 @@ so far as we know.
 %As of this writing (Feb 2013), \Rcmd{sapa} appears to be orphaned.
 %}.
 
-\input{tbl_specprogs}
+\input{supp_specprogs}
 
 \section{Acknowlegements}
 We thank Richard Gaal for catching a subtle error in the from-scratch example.
@@ -698,7 +682,7 @@ We thank Richard Gaal for catching a subtle error in the from-scratch example.
 %\pagebreak
 \section*{Session Info}
 <<eval=TRUE, echo=TRUE, label=SI>>=
-sessionInfo()
+utils::sessionInfo()
 @
 
 %% bib and index
@@ -706,8 +690,5 @@ sessionInfo()
 %\pagebreak
 \bibliographystyle{apalike}
 \bibliography{REFS}
-
-\printindex
-
 
 \end{document}
