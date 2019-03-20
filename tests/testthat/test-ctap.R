@@ -1,7 +1,7 @@
 
 ##
 
-context("Taper classes and methods")
+context("Tapers class and methods")
 
 taps.o = c(0,1:10,100)
 taps = c(0,1:10,100)
@@ -29,10 +29,6 @@ test_that("coercion is functioning",{
   
 })
 
-##
-
-context("Taper constraints -- using as.tapers")
-
 test_that("constrained-range is correct",{
   
   expect_equal(min(ataps),  1)
@@ -43,40 +39,66 @@ test_that("constrained-range is correct",{
   
 })
 
-##
-
-context("Taper constraints -- constraint algorithms")
+test_that("parabolic weighting is applied correctly",{
+  
+  nk <- 10
+  
+  PW <- parabolic_weights(nk)
+  PWr <- parabolic_weights_rcpp(nk)
+  
+  expect_is(PW[['ntap']], 'integer')
+  expect_is(PWr[['ntap']], 'integer')
+  
+  expect_equal(PW[['ntap']], nk)
+  expect_equal(PWr[['ntap']], nk)
+  
+  expect_equal(max(PW[['taper_seq']]), nk)
+  expect_equal(max(PWr[['taper_seq']]), nk)
+  
+  expect_equal(sum(PW[['taper_weights']]), 1)
+  expect_equal(sum(PWr[['taper_weights']]), 1)
+  
+  # num tapers is always integer
+  nkd <- 10.99
+  PWd <- parabolic_weights(nkd)
+  PWdr <- parabolic_weights_rcpp(nkd)
+  
+  expect_is(PWd[['ntap']], 'integer')
+  expect_is(PWdr[['ntap']], 'integer')
+  
+  expect_equal(PWd[['ntap']], PWdr[['ntap']])
+  
+  expect_equal(max(PWd[['taper_seq']]), as.integer(nkd))
+  expect_equal(max(PWdr[['taper_seq']]), as.integer(nkd))
+  
+  expect_equal(sum(PWd[['taper_weights']]), 1)
+  expect_equal(sum(PWdr[['taper_weights']]), 1)
+  
+})
 
 test_that("environment variables are protected",{
   
-  expect_equal(taps,taps.o)
-
-  expect_is(xx <- ctap_simple(taps), 'integer')
-  expect_equal(taps,taps.o)
+  expect_equal(taps, taps.o)
+  expect_equal(ms.taps, as.vector(ms.ataps))
   
-  expect_is(xx <- ctap_simple(ataps), 'tapers')
-  expect_equal(taps,taps.o)
-
-  expect_is(xx <- ctap_simple_rcpp(taps), 'integer')
-  expect_equal(taps,taps.o)
+  expect_is(ctap_simple(taps), 'integer')
   
-  expect_is(xx <- ctap_simple_rcpp(ataps), 'tapers')
-  expect_equal(taps,taps.o)
-
-  expect_warning(xx <- ctap_loess(taps)) # because a sequence is not given
-  expect_equal(taps,taps.o)
+  expect_is(ctap_simple(ataps), 'tapers')
   
-  expect_is(xx <- suppressWarnings(ctap_loess(taps)), 'integer')
-  expect_equal(taps,taps.o)
+  expect_warning(ctap_loess(taps)) # because a sequence is not given
   
-  expect_is(xx <- suppressWarnings(ctap_loess(ataps)), 'tapers')
-  expect_equal(taps,taps.o)
+  expect_is(suppressWarnings(ctap_loess(taps)), 'integer')
   
-  expect_is(xx <- constrain_tapers(taps, verbose = FALSE), 'integer')
-  expect_equal(taps,taps.o)
+  expect_is(suppressWarnings(ctap_loess(ataps)), 'tapers')
   
-  expect_is(xx <- constrain_tapers(ataps, verbose = FALSE), 'tapers')
-  expect_equal(taps,taps.o)
+  expect_error(constrain_tapers(taps, constraint.method = "some.nonexistent.method", verbose = FALSE))
+  
+  expect_is(constrain_tapers(taps, constraint.method = "simple.slope", verbose = FALSE), 'integer')
+  expect_is(suppressWarnings(constrain_tapers(taps, constraint.method = "loess.smooth", verbose = FALSE)), 'integer')
+  
+  expect_equal(taps, constrain_tapers(taps, constraint.method = "none", verbose = FALSE))
+  
+  expect_is(constrain_tapers(ataps, verbose = FALSE), 'tapers')
   
 })
 
@@ -88,24 +110,17 @@ test_that("constraint coercion is functioning",{
   expect_is(ctap_simple(taps), 'integer')
   expect_is(ctap_simple(ataps), 'tapers')
   
-  expect_is(ctap_simple_rcpp(taps), 'integer')
-  expect_is(ctap_simple_rcpp(ataps), 'tapers')
-  
   expect_is(suppressWarnings(ctap_loess(taps)), 'integer')
   expect_is(suppressWarnings(ctap_loess(ataps)), 'tapers')
   
 })
 
-##
-
-context("Taper constraints -- Rcpp implementaion of ctap_simple")
-
 test_that("constrained-range is correct",{
   
   taps <- c(0,1:10,100)
   
-  taps.c <- ctap_simple_rcpp(taps, maxslope=1)
-  taps.c2 <- ctap_simple_rcpp(taps, maxslope=2)
+  taps.c <- ctap_simple(taps, maxslope=1)
+  taps.c2 <- ctap_simple(taps, maxslope=2)
   
   expect_equal(min(taps.c), 1)
   expect_equal(min(taps.c2), 1)
@@ -116,19 +131,16 @@ test_that("constrained-range is correct",{
 
 test_that("bad input is handled correctly",{
   
-  expect_equal(ctap_simple_rcpp(NA), 1)
-  expect_warning(ctap_simple_rcpp(Inf))
   expect_error(rcpp_ctap_simple(NULL))
-  expect_equal(ctap_simple_rcpp(NULL), integer(0))
-  expect_error(ctap_simple_rcpp(1, maxslope=-1))
+  
+  expect_equal(ctap_simple(NA), 1)
+  expect_warning(ctap_simple(Inf))
+  expect_equal(ctap_simple(NULL), integer(0))
+  expect_error(ctap_simple(1, maxslope=-1))
   
 })
 
-##
-
-context("Taper constraints -- through minspan")
-
-test_that("Length and positivity requirements are checked correcly",{
+test_that("Length and positivity requirements are checked correctly",{
   
   expect_error(minspan(1))
   expect_error(minspan(0))

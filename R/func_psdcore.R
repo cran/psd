@@ -40,6 +40,7 @@
 #' \code{\link{pgram_compare}}.
 #' @param refresh  logical; ensure a free environment prior to execution
 #' @param verbose logical; should warnings and messages be given?
+#' @param fast logical; use the faster method?
 #' @param ndecimate  now ignored
 #' @param ... additional parameters
 #' 
@@ -73,6 +74,7 @@ psdcore.default <- function(X.d,
                             plot=FALSE,
                             refresh=FALSE,
                             verbose=FALSE,
+                            fast=FALSE,
                             ndecimate,
                             ...
                            ) {
@@ -205,11 +207,15 @@ psdcore.default <- function(X.d,
       ## resample fft with taper sequence and quadratic weighting
       # ( this is where the majority of the computational work is )
       kseq <- as.integer(kseq) 
-      reff <- resample_fft_rcpp(fftz, kseq, verbose=verbose)
+      if(fast) {
+        reff <- resample_fft_rcpp2(fftz, kseq, verbose=verbose)
+      } else {
+        reff <- resample_fft_rcpp(fftz, kseq, verbose=verbose)
+      }
 
       # return a valid resampled fft or stop
-	    if (inherits(reff,'try-error')){
-      	stop("Could not resample fft... inspect with psd_envGet(",evars[['fft']],"), etc.")
+      if (inherits(reff,'try-error')){
+        stop("Could not resample fft... inspect with psd_envGet(",evars[['fft']],"), etc.")
       } else {
         reff[['psd']]
       }
@@ -244,12 +250,9 @@ psdcore.default <- function(X.d,
   frq <- as.numeric(base::seq.int(0, Nyq, length.out=npsd))
   
   ## Update tapers for consistency
-  kseq <- as.tapers(if (do.mt){	
-  	reff[['k.capped']]
-  } else{ 
-  	kseq
-  })
-
+  if (do.mt) kseq <- reff[['k.capped']]
+  kseq <- as.tapers(kseq)
+  
   ## Normalize and convert to one-sided PSD
   #
   # ( using the trapezoidal rule, the principal being that the

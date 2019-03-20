@@ -1,4 +1,4 @@
-#' Calculate inital power spectral density estimates
+#' Calculate initial power spectral density estimates
 #'
 #' @description
 #' This PSD is used as the starting point -- the pilot spectrum -- for
@@ -17,7 +17,7 @@
 #'
 #' The default behaviour (\code{remove.AR <= 0}) is to remove the standard linear 
 #' model \eqn{[f(x) = \alpha x + \beta]} from the data; however,
-#' the user can model the effect of an autoregressive process by specifiying
+#' the user can model the effect of an autoregressive process by specifying
 #' \code{remove.AR}.
 #'
 #' @section Removing an AR effect from the spectrum:
@@ -51,6 +51,7 @@
 #' @param remove.AR  scalar; the max AR model to be removed from the data.
 #' @param plot  logical; should a plot be created?
 #' @param verbose  logical; should messages be given?
+#' @param fast logical; use fast method?
 #' @param ...  additional parameters passed to \code{\link{psdcore}}
 #' @return An object with class 'spec', invisibly, and \code{"pilot_psd"} in the working environment.
 #'
@@ -58,18 +59,16 @@
 pilot_spec <- function(x, ...) UseMethod("pilot_spec")
 
 #' @rdname pilot_spec
-#' @aliases pilot_spec.ts
 #' @export
 pilot_spec.ts <- function(x, ...){
   stopifnot(is.ts(x))
-  frq <- frequency(x)
+  frq <- stats::frequency(x)
   pilot_spec.default(as.vector(x), x.frequency=frq, ...)  
 }
 
 #' @rdname pilot_spec
-#' @aliases pilot_spec.default
 #' @export
-pilot_spec.default <- function(x, x.frequency=NULL, ntap=NULL, remove.AR=NULL, plot=FALSE, verbose=FALSE, ...){
+pilot_spec.default <- function(x, x.frequency=NULL, ntap=NULL, remove.AR=NULL, plot=FALSE, verbose=FALSE, fast = FALSE, ...){
   
   if (is.null(ntap)) ntap <- 7
   if (is.null(remove.AR)) remove.AR <- 0
@@ -97,15 +96,15 @@ pilot_spec.default <- function(x, x.frequency=NULL, ntap=NULL, remove.AR=NULL, p
     }
     # calculate PSD of the AR fit
     xar <- xprew[['prew_ar']] # ts object
-    Pspec_ar <- psdcore(xar, ntaper=ntap, AR=TRUE, preproc=FALSE, refresh=TRUE, verbose=FALSE)
-    arvar <- var(Pspec_ar[['spec']])
+    Pspec_ar <- psdcore(xar, ntaper=ntap, AR=TRUE, preproc=FALSE, refresh=TRUE, verbose=FALSE, fast = fast)
+    arvar <- stats::var(Pspec_ar[['spec']])
     mARs <- mean(Pspec_ar[['spec']])
     Pspec_ar[['spec']] <- Pspec_ar[['spec']] / mARs
   }
   
   ## Calculate spectrum of non-AR (lm) model:
   xlm <- xprew[['prew_lm']] # ts object
-  Pspec <- psdcore(xlm, ntaper=ntap, AR=FALSE, preproc=FALSE, refresh=TRUE, verbose=FALSE)
+  Pspec <- psdcore(xlm, ntaper=ntap, AR=FALSE, preproc=FALSE, refresh=TRUE, verbose=FALSE, fast = fast)
   Ptap <- Pspec[['taper']]
   num_tap <- length(Ptap)
   num_frq <- Pspec[['numfreq']]
@@ -134,9 +133,9 @@ pilot_spec.default <- function(x, x.frequency=NULL, ntap=NULL, remove.AR=NULL, p
     try({
       if (REMAR){
         if (verbose) message('Plotting,', tolower(ttl))
-        par(las=1)
+        graphics::par(las=1)
         plot(Ospec, log=llog, col="red", main=ttl)
-        mtext(sprintf("(with AR(%s) response)", ordAR), line=0.4)
+        graphics::mtext(sprintf("(with AR(%s) response)", ordAR), line=0.4)
         # rescale
         Pspec_ar[['spec']] <- Pspec_ar[['spec']] * mARs
         plot(Pspec_ar, log=llog, col="blue", add=TRUE)

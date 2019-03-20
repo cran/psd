@@ -1,9 +1,16 @@
 
 ##
 
-context("Utility functions -- decibel conversions")
+context("Utility functions")
 
-test_that("conversions are accurate",{
+test_that("message delivery is working",{
+  expect_message(adapt_message(0))
+  expect_is(adapt_message(0), 'character')
+  expect_message(adapt_message(1))
+  expect_error(adapt_message(-1))
+})
+
+test_that("decibel conversions are accurate",{
   
   expect_equal(dB(2), 10*log10(2))
   expect_equal(dB(1), 0)
@@ -16,19 +23,30 @@ test_that("conversions are accurate",{
   expect_equal(round(dB(70, invert = TRUE, is.power = TRUE)), 3162)
 })
 
-##
-
-context("Utility functions -- variance of difference series")
-
-test_that("difference series are accurate",{
+test_that("variance of difference series are accurate",{
   X <- 1:10
   expect_equal(vardiff(X), 0)
   expect_equal(varddiff(X), 0)
 })
 
-##
+test_that("polygon creation is accurate",{
+  nx <- 10
+  X <- seq_len(nx)
+  Y <- X^2
+  YE <- runif(nx, 2, 5)
+  
+  PX <- create_poly(X, Y, YE, from.lower=FALSE)
+  PXl <- create_poly(X, Y, YE, from.lower=TRUE)
+  
+  expect_is(PX, 'data.frame')
+  expect_is(PXl, 'data.frame')
+  
+  expect_equal(unique(PX$x.x), X)
+  expect_equal(unique(PXl$x.x), X)
+  
+  expect_identical(PX$x.x, PXl$x.x)
 
-context("Utility functions -- matrix generation/manipulation")
+})
 
 test_that("colvec reshapes correctly", {
   m <- na_mat(2,2)
@@ -69,11 +87,7 @@ test_that("zeros and ones are assembled correctly", {
   
 })
 
-##
-
-context("Utility functions -- modulo division")
-
-test_that("values are accurate", {
+test_that("modulo division values are accurate", {
 
   expect_equal(mod(1,2), 1%%2)
   expect_equal(mod(1+1,2+1), (1+1)%%(2+1))
@@ -100,6 +114,13 @@ test_that("error checking works", {
   expect_error(modulo_floor(1:10,1:2))
   expect_error(modulo_floor(1:10,-2:-1))
   
+})
+
+test_that('plotting functions return correctly', {
+  set.seed(1234)
+  x <- rnorm(100)
+  pc <- psdcore(x, plot = FALSE, verbose = FALSE)
+  expect_equal(plot(pc), lines(pc))
 })
 
 ##

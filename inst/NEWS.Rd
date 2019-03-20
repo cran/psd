@@ -3,14 +3,17 @@
 % -*- coding: utf-8 -*-
 %%\newcommand{\PR}{\Sexpr[results=rd]{tools:::Rd_expr_PR(#1)}}
 %%\newcommand{\Rlogo}{\if{html}{\figure{../../html/logo.jpg}}\if{latex}{\figure{logo.jpg}{options: width=0.5in}}}
-\newcommand{\GITpkg}{\href{http://www.github.com/abarbour/#1}{github}}
-\newcommand{\CRANpkg}{\href{http://cran.r-project.org/package=#1}{CRAN}}
+\newcommand{\GITpkg}{\href{https://www.github.com/abarbour/#1}{github}}
+\newcommand{\CRANpkg}{\href{https://cran.r-project.org/package=#1}{CRAN}}
+\newcommand{\CODEcov}{\href{https://codecov.io/github/abarbour/#1?branch=master}{codecov.io}}
+\newcommand{\Appvey}{\href{https://ci.appveyor.com/project/abarbour/#1}{AppVeyor}}
+\newcommand{\Trav}{\href{https://travis-ci.org/abarbour/#1}{Travis-CI}}
 \newcommand{\psd}{\pkg{psd}}
 \newcommand{\gitpsd}{\GITpkg{psd} page}
-\newcommand{\citation}{\href{http://dx.doi.org/10.1016/j.cageo.2013.09.015}{10.1016/j.cageo.2013.09.015}}
+\newcommand{\citation}{\href{https://doi.org/10.1016/j.cageo.2013.09.015}{10.1016/j.cageo.2013.09.015}}
 
 \name{psd}
-\title{News for package \pkg{psd}: \CRANpkg{psd} -- \GITpkg{psd} -- \href{https://travis-ci.org/abarbour/psd}{Travis}}
+\title{News for package \pkg{psd}: \CRANpkg{psd} -- \GITpkg{psd} -- \Trav{psd} -- \Appvey{psd} -- \CODEcov{psd}}
 
 \encoding{UTF-8}
 
@@ -21,10 +24,34 @@
 %}
 %
 
+\section{CHANGES IN \psd{} VERSION 1.2.0 (2019-03-20)}{
+  \itemize{
+    \item
+    Significant speed improvements in spectral
+    derivative computation implemented in \code{riedsid2} 
+    thanks to \href{https://github.com/jkennel}{@jkennel}; 
+    this will be most apparent for very long
+    timeseries.
+    \item \code{riedsid} is deprecated
+    \item \code{niter} in \code{pspectrum} default set down from 5 to 3
+    \item Modernized revdep checks
+  }
+}
+
+\section{CHANGES IN \psd{} VERSION 1.1.0 (2017-07-13)}{
+  \itemize{
+    \item \code{ctap_simple_rcpp} replaces \code{ctap_simple}; associated .c code deprecated 
+  	\item New \code{.travis.yml} and \CODEcov{psd} unit-test coverage 
+  	\item Windows CI with \Appvey{psd}
+  	\item Fixing new NAMESPACE requirements with \code{importFrom} statements
+  	\item Reverse-dependency checking in \code{revdep/}
+  }
+}
+
 %
 % 1.0 -- the era of clean code and Rcpp goodness begins
 %
-\section{CHANGES IN \psd{} VERSION 1.0-1 (2015-03-19)}{
+\section{VERSION 1.0-1 (2015-03-19)}{
   \itemize{
 	  \item Addresses three minor c++ issues associated with type overloads (not seen until CRAN-build-checks):
 	  \enumerate{
@@ -36,12 +63,12 @@
   }
 }
 
-\section{CHANGES IN \psd{} VERSION 1.0-0 (2015-03-17)}{
+\section{VERSION 1.0-0 (2015-03-17)}{
   \itemize{
     
     \item This is a major version bump that addresses performance issues by
     converting known bottlenecks to c++ though the 
-    \href{http://cran.r-project.org/package=Rcpp}{\pkg{Rcpp}} package.
+    \href{https://cran.r-project.org/package=Rcpp}{\pkg{Rcpp}} package.
     There has also been quite a lot of cleanup and rearranging of
     documentation, and making sure methods are consistent.
     Some attempts to be backwards compatible have been made, but
@@ -52,14 +79,13 @@
     is a lightning-fast (by comparison with pure-R) implementation
     of the fft-resampling/reweighting method we use; this new function
     leverages the power of 
-    \href{http://cran.r-project.org/package=RcppArmadillo}{\pkg{RcppArmadillo}}.
+    \href{https://cran.r-project.org/package=RcppArmadillo}{\pkg{RcppArmadillo}}.
     
     \item \code{ctap_simple} has been superceded by \code{ctap_simple_rcpp}; in
     the process of rewriting in c++, a minor bug in the c implementation was
     found (and fixed).
 
-    \item \href{https://travis-ci.org/abarbour/psd}{Travis-CI} is now used to track builds; see 
-    also the \gitpsd{}.
+    \item \Trav{psd} is now used to track builds; see also the \gitpsd{}.
     
     \item Issues/pull-requests can be entered on the \href{https://github.com/abarbour/psd/issues}{Issues} page.
     
@@ -71,7 +97,7 @@
 }
 
 
-\section{CHANGES IN \psd{} VERSION 0.4-3 (2014-10-16)}{
+\section{VERSION 0.4-3 (2014-10-16)}{
   \itemize{ 
     \item Thanks to David Myer for catching a number of mistakes
     in the code and documentation,
@@ -82,14 +108,14 @@
   }
 }
 
-\section{CHANGES IN \psd{} VERSION 0.4-2 (2014-08-05)}{
+\section{VERSION 0.4-2 (2014-08-05)}{
   \itemize{ 
     \item Removed unused variables in \code{ctap_simple.c} 
     \item Removed deprecated \code{@S3method} statements.
   }
 }
 
-\section{CHANGES IN \psd{} VERSION 0.4-1 (2014-04-15)}{
+\section{VERSION 0.4-1 (2014-04-15)}{
   \itemize{
   	\item We have published a paper in Computers & Geosciences regarding
 	\psd{}, and the citation is up to date: \code{citation('psd')}
@@ -102,7 +128,7 @@
 }
 %
 %
-\section{CHANGES IN \psd{} VERSION 0.4-0 (2013-09-19)}{
+\section{VERSION 0.4-0 (2013-09-19)}{
   \itemize{
     \item The taper-constraint methods \code{ctap_markov} and \code{ctap_friedman} are now defunct.
     \item Removed 'units.sty' dependency in vignettes (was causing NOTES and unhappiness).
@@ -113,7 +139,7 @@
 }
 %
 %
-\section{CHANGES IN \psd{} VERSION 0.3-2 (2013-03-27)}{
+\section{VERSION 0.3-2 (2013-03-27)}{
   \itemize{
     \item Revised discussions regarding AR response spectrum.
     \item Fixed \code{psdcore}: it was applying parabolic weights incorrectly.
@@ -126,7 +152,7 @@
   }
 }
 %
-\section{CHANGES IN \psd{} VERSION 0.3-1 (2013-03-12)}{
+\section{VERSION 0.3-1 (2013-03-12)}{
   \itemize{
     \item This marks the first release to CRAN: \psd{}.
           We have included three vignettes, one of which is an overview of
@@ -139,12 +165,12 @@
     \item Removed empty \code{.Last.lib} function to prevent CRAN-check note.
   }
 }
-\section{CHANGES IN \psd{} VERSION 0.3-0 (2013-03-11)}{
+\section{VERSION 0.3-0 (2013-03-11)}{
   \itemize{
     \item Added \code{Tohoku} data.
   }
 }
-\section{CHANGES IN \psd{} VERSION 0.1-0}{
+\section{VERSION 0.1-0}{
 	\itemize{
 		\item First working version
 	}

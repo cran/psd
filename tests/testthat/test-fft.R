@@ -1,7 +1,7 @@
 
 ##
 
-context("DFT calculations -- stats::fft and fftw::FFT")
+context("DFT calculations -- stats::fft [and fftw::FFT]")
 
 library(stats)
 has.fftw <- require(fftw)
@@ -20,10 +20,6 @@ if (has.fftw){
   
   test_that("fftw::FFT returns complex", {
     expect_is(FFT(xn.), 'complex')
-  })
-  
-  test_that("fftw::FFT expects numeric or complex", {
-    expect_error(FFT(x.))
   })
   
   test_that("stats::fft and fftw::FFT return equivalent results", {

@@ -1,7 +1,7 @@
 
 ##
 
-context("Spectrum estimation tools")
+context("Spectrum estimation tools -- I")
 
 tol <- 0.07
 
@@ -9,13 +9,15 @@ test_that("classes are correct",{
   
   set.seed(1234)
   x <- rnorm(100)
-  pd <- spectrum(x, plot=FALSE)
+  pd <- stats::spectrum(x, plot=FALSE)
   pc <- psdcore(x, plot = FALSE, verbose = FALSE)
   pa <- pspectrum(x, plot = FALSE, verbose = FALSE)
+  pa_b <- pspectrum_basic(x, verbose = FALSE)
   
   expect_is(pd, 'spec')
   expect_is(pc, c('amt','spec'))
   expect_is(pa, c('amt','spec'))
+  expect_is(pa_b, c('amt','spec'))
   
   expect_is(normalize(pd, verbose = FALSE), 'spec')
   expect_is(normalize(pa, verbose = FALSE), c('amt','spec'))
@@ -24,6 +26,16 @@ test_that("classes are correct",{
   expect_is(pa[['taper']], 'tapers')
   
 })
+
+test_that("pgram.compare results",{
+  set.seed(1234)
+  x <- rnorm(100)
+  xp <- pspectrum(x, plot = FALSE, verbose=FALSE)
+  expect_is(xp, 'amt')
+  xpc <- pgram_compare(xp)
+  expect_is(xpc, 'list')
+})
+
 
 test_that("pspectrum results are accurate",{
   
@@ -64,6 +76,17 @@ test_that("pspectrum results are accurate",{
   
 })
 
+test_that("psdcore arguments are tested",{
+  set.seed(1234)
+  x <- rnorm(100)
+  xp1 <- psdcore.default(X.d = x, X.frq = 1, plot = FALSE)
+  xp2 <- psdcore.default(X.d = x, X.frq = -1, plot = FALSE)
+  expect_is(xp1, 'spec')
+  expect_is(xp2, 'spec')
+  expect_equal(xp1,xp2)
+  expect_error(psdcore.default(X.d = x, X.frq = "1", plot = FALSE))
+})
+
 test_that("psdcore results are accurate",{
   
   set.seed(1234)
@@ -74,8 +97,8 @@ test_that("psdcore results are accurate",{
   xt <- ts(x, frequency=1)
   xt2 <- ts(x, frequency=10)
   
-  pc <- psdcore(xt, plot = FALSE, verbose = FALSE)
-  pc2 <- psdcore(xt2, plot = FALSE, verbose = FALSE)
+  pc <- psdcore(xt, verbose = FALSE, plot = FALSE)
+  pc2 <- psdcore(xt2, verbose = FALSE, plot = FALSE)
   
   # make sure Nyquist frequencies are correct
   fn <- max(pc[['freq']])
@@ -161,6 +184,25 @@ test_that("pilot_spec results are accurate",{
   expect_equal(fn, frequency(xt)/2)
   expect_equal(fn2, frequency(xt2)/2)
   
+})
+
+test_that("check fast version",{
+  set.seed(1234)
+  x <- rnorm(100)
+  expect_equal(psdcore(x, verbose = FALSE, plot = FALSE, fast = FALSE),
+               psdcore(x, verbose = FALSE, plot = FALSE, fast = TRUE))
+  #expect_equal(pspectrum(x, verbose = FALSE, plot = FALSE, fast = FALSE),
+  #             pspectrum(x, verbose = FALSE, plot = FALSE, fast = TRUE))
+  expect_equal(pilot_spec(x, verbose = FALSE, plot = FALSE, fast = FALSE),
+               pilot_spec(x, verbose = FALSE, plot = FALSE, fast = TRUE))
+  
+  xt2 <- ts(x, frequency=10)
+  expect_equal(psdcore(xt2, verbose = FALSE, plot = FALSE, fast = FALSE),
+               psdcore(xt2, verbose = FALSE, plot = FALSE, fast = TRUE))
+  #expect_equal(pspectrum(xt2, verbose = FALSE, plot = FALSE, fast = FALSE),
+  #             pspectrum(xt2, verbose = FALSE, plot = FALSE, fast = TRUE))
+  expect_equal(pilot_spec(xt2, verbose = FALSE, plot = FALSE, fast = FALSE),
+               pilot_spec(xt2, verbose = FALSE, plot = FALSE, fast = TRUE))
 })
 
 ##
