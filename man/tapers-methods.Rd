@@ -27,8 +27,17 @@ data.frame.tapers(x, ...)
 
 \method{points}{tapers}(x, pch = "_", cex = 1, ...)
 
-\method{plot}{tapers}(x, xi = NULL, color.pal = c("Blues", "Spectral"),
-  ylim = NULL, hv.lines = FALSE, log.y = FALSE, ...)
+\method{plot}{tapers}(
+  x,
+  xi = NULL,
+  color.pal = c("Blues", "Spectral"),
+  ylim = NULL,
+  hv.lines = FALSE,
+  log.y = FALSE,
+  xlab = "taper index",
+  ylab = "number of tapers",
+  ...
+)
 }
 \arguments{
 \item{x}{tapers object}
@@ -54,6 +63,8 @@ data.frame.tapers(x, ...)
 \item{hv.lines}{logical; should horizontal (log2) and vertical reference lines be plotted?}
 
 \item{log.y}{logical; should the vertical scale be logarithmic?}
+
+\item{xlab, ylab}{character; labels for plot axes}
 }
 \value{
 \code{plot} returns a list with names: \code{line.colors} (hex values)

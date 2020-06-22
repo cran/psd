@@ -53,6 +53,17 @@ parabolic_weights_rcpp <- function(ntap = 1L) {
     .Call('_psd_parabolic_weights_rcpp', PACKAGE = 'psd', ntap)
 }
 
+#' @title parabolic_weights_field
+#' @rdname parabolic_weights
+#' 
+#' @param ntap the maximum number of tapers
+#' 
+#' @export
+#' 
+parabolic_weights_field <- function(ntap) {
+    .Call('_psd_parabolic_weights_field', PACKAGE = 'psd', ntap)
+}
+
 #' @title Resample an fft using varying numbers of sine tapers
 #' 
 #' @description
@@ -83,49 +94,70 @@ resample_fft_rcpp <- function(fftz, tapers, verbose = TRUE, dbl = TRUE, tapcap =
     .Call('_psd_resample_fft_rcpp', PACKAGE = 'psd', fftz, tapers, verbose, dbl, tapcap)
 }
 
-#' @rdname parabolic_weights
+#' @title replaces time consuming portion of riedsid2
+#' 
+#' @param PSD vector or class \code{'amt'} or \code{'spec'}; the spectral values used to optimize taper numbers
+#' @param ntaper scalar or vector; number of tapers to apply optimization
+#' @param riedsid_column scalar integer; which column to use in multivariate optimization. If the value is 0 the maximum number of tapers for all columns is chosen. If the value is < 0 the minimum number of tapers for all columns is chosen. If the value is 1, 2, 3, etc. the number of tapers is based on the column selected.
+#' 
+#' @return kopt vector
 #' @export
-parabolic_weights_rcpp2 <- function(ntap = 1L) {
-    .Call('_psd_parabolic_weights_rcpp2', PACKAGE = 'psd', ntap)
+#' 
+riedsid_rcpp <- function(PSD, ntaper, riedsid_column = 0L) {
+    .Call('_psd_riedsid_rcpp', PACKAGE = 'psd', PSD, ntaper, riedsid_column)
 }
 
 #' @title Resample an fft using varying numbers of sine tapers
 #' 
 #' @description
-#' Produce an un-normalized psd based on an fft and a vector of optimal sine tapers
+#' Produce an un-normalized psd based on an fft and a vector of optimal sine 
+#' tapers.
 #' 
 #' @details
-#' To produce a psd estimate with our adaptive spectrum estimation method, we need only make one 
-#' fft calculation initially and then
-#' apply the weighting factors given by \code{\link{parabolic_weights_rcpp}}, which this
-#' function does.
+#' To produce a psd estimate with our adaptive spectrum estimation method,
+#' we need only make one fft calculation initially and then apply the weighting
+#' factors given by \code{\link{parabolic_weights}}, which this function 
+#' does.
 #' 
-#' @param fftz complex; a vector representing the dual-length \code{\link{fft}}; see also the \code{dbl} argument
+#' @param fftz complex; a matrix representing the dual-length \code{\link{fft}}; see also the \code{dbl} argument
 #' @param tapers integer; a vector of tapers
 #' @param verbose logical; should messages be given?
 #' @param dbl logical; should the code assume \code{fftz} is dual-length or single-length?
 #' @param tapcap integer; the maximum number of tapers which can be applied; note that the length is
 #' automatically limited by the length of the series.
 #' 
+#' @return list that includes the auto and cross-spectral density, and the
+#' number of tapers
+#' 
 #' @seealso \code{\link{riedsid}}
 #' 
 #' @examples
 #' fftz <- complex(real=1:8, imaginary = 1:8)
 #' taps <- 1:4
-#' try(resample_fft_rcpp2(fftz, taps))
+#' try(resample_mvfft(fftz, taps))
 #' 
 #' @export
-resample_fft_rcpp2 <- function(fftz, tapers, verbose = TRUE, dbl = TRUE, tapcap = 1000L) {
-    .Call('_psd_resample_fft_rcpp2', PACKAGE = 'psd', fftz, tapers, verbose, dbl, tapcap)
+resample_mvfft <- function(fftz, tapers, verbose = TRUE, dbl = TRUE, tapcap = 10000L) {
+    .Call('_psd_resample_mvfft', PACKAGE = 'psd', fftz, tapers, verbose, dbl, tapcap)
 }
 
-#' @title replaces time consuming portion of riedsid2
-#' 
-#' @param PSD vector or class \code{'amt'} or \code{'spec'}; the spectral values used to optimize taper numbers
-#' @param ntaper scalar or vector; number of tapers to apply optimization
-#' 
-#' @return kopt vector
-riedsid_rcpp <- function(PSD, ntaper) {
-    .Call('_psd_riedsid_rcpp', PACKAGE = 'psd', PSD, ntaper)
+#' @title
+#' det_vector
+#'
+#' @description
+#' Determinant for an array
+#'
+#' @param x \code{numeric array} values to evaluate
+#'
+#' @return vector of determinants
+#'
+#'
+#' @export
+det_vector <- function(x) {
+    .Call('_psd_det_vector', PACKAGE = 'psd', x)
+}
+
+solve_tf <- function(x) {
+    .Call('_psd_solve_tf', PACKAGE = 'psd', x)
 }
 

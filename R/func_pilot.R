@@ -15,7 +15,7 @@
 #' The taper series of the returned spectrum is constrained using
 #' \code{as.tapers(..., minspan=TRUE)}.
 #'
-#' The default behaviour (\code{remove.AR <= 0}) is to remove the standard linear 
+#' The default behavior (\code{remove.AR <= 0}) is to remove the standard linear 
 #' model \eqn{[f(x) = \alpha x + \beta]} from the data; however,
 #' the user can model the effect of an autoregressive process by specifying
 #' \code{remove.AR}.
@@ -35,7 +35,7 @@
 #' will perform and whether the AR model is appropriate.
 #'
 #' \emph{Note that this function does not produce a parametric spectrum estimation; rather,
-#' it will return the amplitude response of the best-fitting AR model as \code{\link[stats]{spec.ar}}
+#' it will return the amplitude response of the best-fitting AR model as \code{\link{spec.ar}}
 #' would. \strong{Interpret these results with caution, as an AR response spectrum
 #' can be misleading.}}
 #'
@@ -43,7 +43,7 @@
 #' @aliases pilot_spectrum spec.pilot
 #' @export
 #' @author A.J. Barbour
-#' @seealso \code{\link{psdcore}}, \code{\link{prewhiten}}, \code{\link[stats]{spec.ar}}
+#' @seealso \code{\link{psdcore}}, \code{\link{prewhiten}}, \code{\link{spec.ar}}
 #'
 #' @param x  vector; the data series to find a pilot spectrum for
 #' @param x.frequency  scalar; the sampling frequency (e.g. Hz) of the series
@@ -51,9 +51,10 @@
 #' @param remove.AR  scalar; the max AR model to be removed from the data.
 #' @param plot  logical; should a plot be created?
 #' @param verbose  logical; should messages be given?
-#' @param fast logical; use fast method?
+#' @param fast logical; use fast method in \code{\link{psdcore}}?
 #' @param ...  additional parameters passed to \code{\link{psdcore}}
-#' @return An object with class 'spec', invisibly, and \code{"pilot_psd"} in the working environment.
+#' @return Invisibly, an object with class \code{'spec'}, and 
+#' \code{"pilot_psd"} in the working environment.
 #'
 #' @example inst/Examples/rdex_pilotspec.R
 pilot_spec <- function(x, ...) UseMethod("pilot_spec")
@@ -63,17 +64,31 @@ pilot_spec <- function(x, ...) UseMethod("pilot_spec")
 pilot_spec.ts <- function(x, ...){
   stopifnot(is.ts(x))
   frq <- stats::frequency(x)
-  pilot_spec.default(as.vector(x), x.frequency=frq, ...)  
+  args <- list(...)
+  args[['x']] <- x
+  args[['x.frequency']] <- frq
+  do.call('pilot_spec.default', args)
+}
+
+#' @rdname pilot_spec
+#' @aliases pilot_spec.matrix
+#' @export
+pilot_spec.matrix <- function(x, x.frequency, ...){
+  frq <- if (missing(x.frequency)){
+    stats::frequency(x)
+  } else {
+    x.frequency
+  }
+  pilot_spec(stats::ts(x, frequency=frq), ...)
 }
 
 #' @rdname pilot_spec
 #' @export
 pilot_spec.default <- function(x, x.frequency=NULL, ntap=NULL, remove.AR=NULL, plot=FALSE, verbose=FALSE, fast = FALSE, ...){
-  
   if (is.null(ntap)) ntap <- 7
   if (is.null(remove.AR)) remove.AR <- 0
   if (is.null(x.frequency)) x.frequency <- 1
-  stopifnot(length(ntap)==1)
+  stopifnot(length(ntap)==1 | length(ntap)==nrow(x) %/% 2)
   stopifnot(length(remove.AR)==1)
   stopifnot(length(x.frequency)==1)
 
@@ -84,7 +99,8 @@ pilot_spec.default <- function(x, x.frequency=NULL, ntap=NULL, remove.AR=NULL, p
   if (REMAR) remove.AR <- max(1, min(100, abs(remove.AR)))
   
   xprew <- prewhiten(x, x.fsamp=x.frequency, AR.max=remove.AR, detrend=TRUE, impute=TRUE, plot=FALSE, verbose=verbose)
-  
+  # (result is ts)
+
   ## Remove and AR model
   if (REMAR){
     # AR fit

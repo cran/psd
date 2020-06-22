@@ -17,7 +17,7 @@
 #' The process is repeated \code{niter} times; further iteration may be necessary 
 #' to reach convergence, or an acceptably low spectral variance. 
 #' In this context the term "acceptable" is rather subjective: one can 
-#' usually detect an unconverged state by a rather jagged appearence of the spectrum,
+#' usually detect an unconverged state by a rather jagged appearance of the spectrum,
 #' but this is uncommon in our experience.
 #'
 #' \subsection{Adaptive estimation}{
@@ -48,13 +48,13 @@
 #' @name psd-package
 #' @aliases psd spec.psd
 #' 
-#' @author Andrew J. Barbour <andy.barbour@@gmail.com> and Robert L. Parker
+#' @author Andrew J. Barbour <andy.barbour@@gmail.com>, Jonathan Kennel, and Robert L. Parker
 #' 
 #' @useDynLib psd
 #' 
-#' @import RColorBrewer signal zoo
+#' @import RColorBrewer zoo
 #' @importFrom Rcpp sourceCpp
-#' @importFrom graphics abline layout legend lines mtext par plot title
+#' @importFrom graphics abline layout legend lines mtext par plot title matlines matplot
 #' @importFrom stats acf as.ts frequency is.ts lm loess loess.control pchisq qchisq residuals spec.pgram start ts var
 #' @importFrom utils head tail
 #'
@@ -134,8 +134,9 @@ NULL
 #' Observations of teleseismic strains from the 2011 Tohoku earthquake.
 #'
 #' The \eqn{M_w 9} Tohoku earthquake happened on March 11, 2011.  The seismic
-#' waves were recorded at stations across the globe, including by strainmeters
-#' in the Plate Boundary Observatory (PBO) borehole strainmeters.
+#' waves were recorded at stations across the globe, including by borehole strainmeters
+#' in the Network of the Americas (NOTA), which was previously
+#' known as the Plate Boundary Observatory (PBO) network.
 #'
 #' These data are for station B084, which is located approximately 8500 km away from
 #' the epicenter. Because this distance is large, the seismic waves didn't arrive
@@ -188,7 +189,7 @@ NULL
 #'
 #' @references USGS summary page: 
 #' @references \url{https://earthquake.usgs.gov/earthquakes/eventpage/official20110311054624120_30/executive}
-#' @source PBO High Frequency archive: 
+#' @source High frequency strain data archive: 
 #' @source \url{http://borehole.unavco.org/bsm/earthquakes/NeartheEastCoastofHonshuJapan_20110311}
 #'
 #' @examples
@@ -234,4 +235,37 @@ NULL
 #' FUN <- attr(hfsnm, "generator")
 #' try(dat <- FUN(molten=FALSE)) # may fail without library-access to BSSA
 #' try(all.equal(dat[,1:4], hfsnm[,1:4]))
+NULL
+
+
+
+#' Water levels from borehole WIPP30
+#' 
+#' Observed water levels and barometric pressure from
+#' well WIPP30 (WIPP: Waste Isolation Pilot Plant)
+#' 
+#' @details This is the dataset used in the multivariate PSD vignette
+#' 
+#' @name wipp30
+#' @docType data
+#' @format A matrix with 13413 rows following 4 variables.
+#'
+#' \describe{
+#' \item{\code{time}}{Time (hours)}
+#' \item{\code{wl}}{Water levels (psi)}
+#' \item{\code{baro}}{Barometric pressure (psi)}
+#' \item{\code{et}}{Earth tide gravity potential (nanometers/second^2)}
+#' }
+#'
+#' @seealso \code{\link{pspectrum}}
+#'
+#' @references Toll, N.J., Rasmussen, T.C., (2007),
+#'  Removal of Barometric Pressure Effects and Earth Tides from Observed Water Levels.
+#'  \emph{Ground Water}, \strong{45}, 101–105. \url{https://doi.org/10.1111/j.1745-6584.2006.00254.x}
+#' 
+#' @source BETCO page: \url{http://www.hydrology.uga.edu/rasmussen/betco/}
+#' @keywords datasets
+#' @examples
+#' data(wipp30)
+#' summary(wipp30)
 NULL

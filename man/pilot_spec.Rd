@@ -5,6 +5,7 @@
 \alias{pilot_spectrum}
 \alias{spec.pilot}
 \alias{pilot_spec.ts}
+\alias{pilot_spec.matrix}
 \alias{pilot_spec.default}
 \title{Calculate initial power spectral density estimates}
 \usage{
@@ -12,9 +13,18 @@ pilot_spec(x, ...)
 
 \method{pilot_spec}{ts}(x, ...)
 
-\method{pilot_spec}{default}(x, x.frequency = NULL, ntap = NULL,
-  remove.AR = NULL, plot = FALSE, verbose = FALSE, fast = FALSE,
-  ...)
+\method{pilot_spec}{matrix}(x, x.frequency, ...)
+
+\method{pilot_spec}{default}(
+  x,
+  x.frequency = NULL,
+  ntap = NULL,
+  remove.AR = NULL,
+  plot = FALSE,
+  verbose = FALSE,
+  fast = FALSE,
+  ...
+)
 }
 \arguments{
 \item{x}{vector; the data series to find a pilot spectrum for}
@@ -31,10 +41,11 @@ pilot_spec(x, ...)
 
 \item{verbose}{logical; should messages be given?}
 
-\item{fast}{logical; use fast method?}
+\item{fast}{logical; use fast method in \code{\link{psdcore}}?}
 }
 \value{
-An object with class 'spec', invisibly, and \code{"pilot_psd"} in the working environment.
+Invisibly, an object with class \code{'spec'}, and 
+\code{"pilot_psd"} in the working environment.
 }
 \description{
 This PSD is used as the starting point -- the pilot spectrum -- for
@@ -51,7 +62,7 @@ criteria to speak of).
 The taper series of the returned spectrum is constrained using
 \code{as.tapers(..., minspan=TRUE)}.
 
-The default behaviour (\code{remove.AR <= 0}) is to remove the standard linear 
+The default behavior (\code{remove.AR <= 0}) is to remove the standard linear 
 model \eqn{[f(x) = \alpha x + \beta]} from the data; however,
 the user can model the effect of an autoregressive process by specifying
 \code{remove.AR}.
@@ -72,7 +83,7 @@ If the AR order is much larger than this, it's unclear how \code{\link{prewhiten
 will perform and whether the AR model is appropriate.
 
 \emph{Note that this function does not produce a parametric spectrum estimation; rather,
-it will return the amplitude response of the best-fitting AR model as \code{\link[stats]{spec.ar}}
+it will return the amplitude response of the best-fitting AR model as \code{\link{spec.ar}}
 would. \strong{Interpret these results with caution, as an AR response spectrum
 can be misleading.}}
 }
@@ -98,7 +109,7 @@ plot(pilot_spec(xc, remove.AR=10), log="dB", add=TRUE, col="red")
 }#REX
 }
 \seealso{
-\code{\link{psdcore}}, \code{\link{prewhiten}}, \code{\link[stats]{spec.ar}}
+\code{\link{psdcore}}, \code{\link{prewhiten}}, \code{\link{spec.ar}}
 }
 \author{
 A.J. Barbour

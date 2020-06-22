@@ -46,8 +46,7 @@ update_adapt_history(PSD, stage, ...)
 
 \method{update_adapt_history}{spec}(PSD, stage, ...)
 
-\method{update_adapt_history}{default}(PSD, stage, ntap = NA,
-  freq = NULL, ...)
+\method{update_adapt_history}{default}(PSD, stage, ntap = NA, freq = NULL, ...)
 
 new_adapt_history(adapt_stages)
 }
@@ -118,7 +117,7 @@ a fresh environment is desired: typically only if, for example, \code{\link{psdc
 used rather than \code{\link{pspectrum}}.
 }
 
-\section{Assigning and Retieving}{
+\section{Assigning and Retrieving}{
 
 \code{psd_envAssign} and \code{psd_envGet} perform the assignments and retrieval
 of objects in the environment.  A convenience function, \code{psd_envAssignGet},

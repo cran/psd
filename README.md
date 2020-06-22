@@ -2,11 +2,13 @@
 
 Adaptive, sine multitaper power spectral density estimation for R
 
-by Andrew J Barbour and Robert L Parker
+by Andrew J Barbour, Jonathan Kennel, and Robert L Parker
 
-_with major contributions from Jonathan Kennel_
+[![](https://www.r-pkg.org/badges/version-last-release/psd?color=green)](https://cran.r-project.org/package=psd) [![Travis Build Status](https://travis-ci.org/abarbour/psd.svg?branch=master)](https://travis-ci.org/abarbour/psd) [![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/abarbour/psd?branch=master&svg=true)](https://ci.appveyor.com/project/abarbour/psd) [![Code Coverage](https://codecov.io/github/abarbour/psd/coverage.svg?branch=master)](https://codecov.io/github/abarbour/psd?branch=master)  [![Downloads](https://cranlogs.r-pkg.org/badges/psd)](https://www.r-pkg.org/pkg/psd) [![License](https://img.shields.io/badge/license-GPL-lightgrey.svg)](https://www.gnu.org/licenses/gpl-2.0.html) [![Citation](https://img.shields.io/badge/published-CAGEO-red.svg)](https://doi.org/10.1016/j.cageo.2013.09.015)
 
-[![Travis Build Status](https://travis-ci.org/abarbour/psd.svg?branch=master)](https://travis-ci.org/abarbour/psd) [![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/abarbour/psd?branch=master&svg=true)](https://ci.appveyor.com/project/abarbour/psd) [![Code Coverage](https://codecov.io/github/abarbour/psd/coverage.svg?branch=master)](https://codecov.io/github/abarbour/psd?branch=master)  [![Downloads](https://cranlogs.r-pkg.org/badges/psd)](https://www.r-pkg.org/pkg/psd) [![License](https://img.shields.io/badge/license-GPL-lightgrey.svg)](https://www.gnu.org/licenses/gpl-2.0.html) [![Citation](https://img.shields.io/badge/published-CAGEO-red.svg)](https://doi.org/10.1016/j.cageo.2013.09.015)
+### **_Latest News_**
+
+_As of version 2.0, one can calculate the multivariate PSD ("cross spectrum") between two signals._
 
 ## Description
 
@@ -44,7 +46,7 @@ typically found in geophysical datasets.
 
 ## How to Cite
 
-Bob and I have published a [paper in Computers & Geosciences][1]
+Bob and Andy have a [paper in Computers & Geosciences][1]
 to accompany this software [(download a pdf, 1MB)][pdf]; it describes the theory behind
 the estimation process, and how we apply it in practice.
 If you find `psd` useful in your research, we kindly request
@@ -106,12 +108,12 @@ The spectral uncertainty can be easily calculated:
 ### Installing the Development Version
 
 Should you wish to install the development version
-of this software, the [devtools][2] library
+of this software, the [remotes][2] library
 will be useful:
 
-    library(devtools)
+    library(remotes)
     install_github("abarbour/psd")
 
 [1]: https://doi.org/10.1016/j.cageo.2013.09.015
-[2]: https://cran.r-project.org/package=devtools
+[2]: https://cran.r-project.org/package=remotes
 [pdf]: https://github.com/abarbour/psd/raw/master/paper/2014.barbour_parker.official.CAGEO3272.pdf

@@ -1,4 +1,4 @@
-## ----eval=FALSE, echo=TRUE-----------------------------------------------
+## ----eval=FALSE, echo=TRUE----------------------------------------------------
 #  rm(list=ls())
 #  library(fftw)
 #  library(rbenchmark)
@@ -6,7 +6,7 @@
 #  library(reshape2)
 #  library(ggplot2)
 
-## ----eval=FALSE, echo=TRUE, label="Benchmark function"-------------------
+## ----eval=FALSE, echo=TRUE, label="Benchmark function"------------------------
 #  reps <- 10
 #  dftbm <- function(nd, repls=reps){
 #  	set.seed(1234)
@@ -17,26 +17,26 @@
 #  	return(bmd)
 #  }
 
-## ----eval=TRUE, echo=TRUE, label="Num. terms to bench."------------------
+## ----eval=TRUE, echo=TRUE, label="Num. terms to bench."-----------------------
 (nterms.even <- round(2**seq.int(from=4,to=20,by=1)))
 
-## ----eval=FALSE, echo=TRUE, label="Use lapply to do benching."-----------
+## ----eval=FALSE, echo=TRUE, label="Use lapply to do benching."----------------
 #  bench.even <- function(){
 #    benchdat.e <- plyr::ldply(lapply(X=nterms.even, FUN=dftbm))
 #    }
 #  bench.even()
 
-## ----eval=FALSE, echo=TRUE, label="Setup non highly composite lengths."----
+## ----eval=FALSE, echo=TRUE, label="Setup non highly composite lengths."-------
 #  nterms.odd <- nterms.even + 1
 #  nterms.odd <- nterms.odd[nterms.odd < 50e3] # painfully long otherwise!
 
-## ----eval=FALSE, echo=TRUE, label="Do benching."-------------------------
+## ----eval=FALSE, echo=TRUE, label="Do benching."------------------------------
 #  bench.odd <- function(){
 #    benchdat.o <- plyr::ldply(lapply(X=nterms.odd, FUN=dftbm))
 #    }
 #  bench.odd() # FAIR WARNING: this can take a while!!
 
-## ----eval=FALSE, echo=TRUE, label="Map/Reduce/Summarize etc"-------------
+## ----eval=FALSE, echo=TRUE, label="Map/Reduce/Summarize etc"------------------
 #  pltbench <- function(lentyp=c("even","odd")){
 #    benchdat <- switch(match.arg(lentyp), even=benchdat.e, odd=benchdat.o)
 #    stopifnot(exists("benchdat"))
@@ -86,11 +86,11 @@
 #    print(g4 <<- g3 + geom_pointrange())
 #  }
 
-## ----eval=FALSE, echo=TRUE,  label="Plot non highly composite results."----
+## ----eval=FALSE, echo=TRUE,  label="Plot non highly composite results."-------
 #  pltbench("even")
 #  allmeds.prev <- allmeds
 #  pltbench("odd")
 
-## ----eval=TRUE, echo=TRUE, label=SI--------------------------------------
+## ----eval=TRUE, echo=TRUE, label=SI-------------------------------------------
 utils::sessionInfo()
 

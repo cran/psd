@@ -38,3 +38,48 @@ test_that("riedsid2 R-version is equal to Rcpp version",{
   expect_equal(riedsid2(pa_b, fast=FALSE), riedsid2(pa_b, fast = TRUE))
   
 })
+
+
+test_that("multivariate riedsid2 works",{
+  
+  set.seed(1234)
+  x <- matrix(rnorm(200), ncol = 2)
+  taps <- ceiling(runif(200/2, 10, 300))
+  
+  pd <- stats::spectrum(x, plot=FALSE)
+  
+  # each separately and then take the minimum number of tapers
+  r_s <- cbind(riedsid2(pd$spec[, 1], fast=FALSE),
+               riedsid2(pd$spec[, 2], fast=FALSE))
+  r_s <- apply(r_s, 1, min)
+  
+  # multivariate method
+  r_mv <- riedsid2(pd$spec, fast=TRUE)
+  expect_equal(r_mv, r_s)
+  
+  # spec method works
+  r_mv_spec <- riedsid2(pd, fast=TRUE)
+  expect_equal(r_mv_spec, r_s)
+  
+  
+})
+
+
+test_that("riedsid_rcpp  work",{
+  set.seed(1234)
+  x <- matrix(rnorm(200), ncol = 2)
+  pd <- stats::spectrum(x, plot=FALSE)
+  
+  r_s1<- riedsid_rcpp(PSD = as.matrix(pd$spec[,1]), ntaper = 3, riedsid_column = 0)
+  r_s2<- riedsid_rcpp(PSD = as.matrix(pd$spec[,1]), ntaper = 3, riedsid_column = -1)
+  r_s3<- riedsid_rcpp(PSD = as.matrix(pd$spec[,1]), ntaper = 3, riedsid_column = 1)
+
+  expect_equal(r_s1, r_s2)
+  expect_equal(r_s2, r_s3)
+  expect_warning(riedsid_rcpp(PSD = as.matrix(pd$spec[,1]), 
+                            ntaper = 3, 
+                            riedsid_column = 2))
+  
+})
+  
+  

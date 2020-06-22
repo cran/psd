@@ -6,7 +6,7 @@
 #' @details
 #' The optimization is as follows. First, weighted derivatives of the 
 #' input PSD are computed.
-#' Using those derivates the optimal number of tapers is found through the 
+#' Using those derivatives the optimal number of tapers is found through the 
 #' RS-RLP formulation.
 #' Constraints are then placed on the practicable number of tapers.
 #' 
@@ -49,6 +49,7 @@
 #' @param c.method string; constraint method to use with \code{\link{constrain_tapers}}, only if \code{constrained=TRUE}
 #' @param verbose logical; should messages be printed?
 #' @param fast logical; use faster method?
+#' @param riedsid_column scalar integer; which column to use in multivariate optimization. If the value is 0 the maximum number of tapers for all columns is chosen. If the value is < 0 the minimum number of tapers for all columns is chosen. If the value is 1, 2, 3, etc. the number of tapers is based on the column selected.
 #' @param ... optional arguments passed to \code{\link{constrain_tapers}}
 #' @return Object with class \code{'tapers'}
 #' 
@@ -64,9 +65,9 @@ riedsid.spec <- function(PSD, ...){
   Pspec <- PSD[['spec']]
   Tapseq <- PSD[['freq']]
   ntaper <- if (is.amt(PSD)){
-      PSD[['taper']]
+    PSD[['taper']]
   } else {
-      rep.int(x=1L, times=length(Pspec))
+    rep.int(x=1L, times=length(Pspec))
   }
   riedsid(PSD=Pspec, ntaper=ntaper, tapseq=Tapseq, ...)
 }
@@ -77,7 +78,8 @@ riedsid.spec <- function(PSD, ...){
 riedsid.default <- function(PSD, ntaper = 1L, 
                             tapseq=NULL, 
                             Deriv.method=c("local_qls","spg"),
-                            constrained=TRUE, c.method=NULL,
+                            constrained=TRUE,
+                            c.method=NULL,
                             verbose=TRUE, ...) {
   .Deprecated('riedsid2', package='psd', old='riedsid')
   ## spectral values
@@ -124,11 +126,11 @@ riedsid.default <- function(PSD, ntaper = 1L,
   rss <- if (lsmeth){
     # spectral derivatives the preferred way
     DerivFUN <- function(j, 
-                     j1=j-nspan[j]+nadd-1, 
-                     j2=j+nspan[j]+nadd-1, 
-                     jr=j1:j2, 
-                     logY=lY[jr], 
-                     dEps=eps){
+                         j1=j-nspan[j]+nadd-1, 
+                         j2=j+nspan[j]+nadd-1, 
+                         jr=j1:j2, 
+                         logY=lY[jr], 
+                         dEps=eps){
       u <- jr - (j1 + j2)/2 # rowvec 
       u2 <- u*u             # rowvec
       L <- j2-j1+1          # constant
@@ -188,6 +190,9 @@ riedsid.default <- function(PSD, ntaper = 1L,
   return(kopt)
 } 
 
+
+
+
 #' @rdname riedsid
 #' @export
 riedsid2 <- function(PSD, ...) UseMethod("riedsid2")
@@ -197,20 +202,29 @@ riedsid2 <- function(PSD, ...) UseMethod("riedsid2")
 riedsid2.spec <- function(PSD, ...){
   pspec <- PSD[['spec']]
   freqs <- PSD[['freq']]
+  
   ntap <- if (is.amt(PSD)){
     PSD[['taper']]
   } else {
-    rep.int(x=1L, times=length(pspec))
+    rep.int(x=1L, times=NROW(pspec))
   }
+  
   riedsid2(PSD=pspec, ntaper=ntap, ...)
 }
 
+
 #' @rdname riedsid
 #' @export
-riedsid2.default <- function(PSD, ntaper=1L, constrained=TRUE, verbose=TRUE, fast=FALSE, ...){
+riedsid2.default <- function(PSD,
+                             ntaper=1L,
+                             constrained=TRUE,
+                             verbose=TRUE,
+                             fast=FALSE, 
+                             riedsid_column = 0L, 
+                             ...){
   
   if (fast) {
-    kopt <- riedsid_rcpp(PSD, ntaper)
+    kopt <- riedsid_rcpp(as.matrix(PSD), ntaper, riedsid_column)
   } else {
     
     PSD <- as.vector(PSD)

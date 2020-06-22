@@ -3,6 +3,7 @@
 \name{psdcore}
 \alias{psdcore}
 \alias{psdcore.ts}
+\alias{psdcore.matrix}
 \alias{psdcore.default}
 \title{Multitaper power spectral density estimates of a series}
 \usage{
@@ -10,9 +11,21 @@ psdcore(X.d, ...)
 
 \method{psdcore}{ts}(X.d, ...)
 
-\method{psdcore}{default}(X.d, X.frq = NULL, ntaper = as.tapers(5),
-  preproc = TRUE, na.action = stats::na.fail, plot = FALSE,
-  refresh = FALSE, verbose = FALSE, fast = FALSE, ndecimate, ...)
+\method{psdcore}{matrix}(X.d, X.frq, ...)
+
+\method{psdcore}{default}(
+  X.d,
+  X.frq = NULL,
+  ntaper = as.tapers(5),
+  preproc = TRUE,
+  na.action = stats::na.fail,
+  plot = FALSE,
+  refresh = FALSE,
+  verbose = FALSE,
+  fast = FALSE,
+  ndecimate,
+  ...
+)
 }
 \arguments{
 \item{X.d}{the series to estimate a spectrum for}
@@ -27,7 +40,7 @@ psdcore(X.d, ...)
 
 \item{na.action}{function to deal with \code{NA} values}
 
-\item{plot}{logical; should the estimates be shown compared to the \code{\link[stats]{spectrum}}-based estimates?
+\item{plot}{logical; should the estimates be shown compared to the \code{\link{spectrum}}-based estimates?
 Note that this will add some computation time, since the cosine-tapered periodogram is calculated inside
 \code{\link{pgram_compare}}.}
 

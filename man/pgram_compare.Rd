@@ -7,8 +7,15 @@
 \usage{
 pgram_compare(x, ...)
 
-\method{pgram_compare}{amt}(x, f = NULL, X = NULL, log.freq = TRUE,
-  db.spec = TRUE, taper = 0.2, ...)
+\method{pgram_compare}{amt}(
+  x,
+  f = NULL,
+  X = NULL,
+  log.freq = TRUE,
+  db.spec = TRUE,
+  taper = 0.2,
+  ...
+)
 }
 \arguments{
 \item{x}{a single \code{\link{psdcore}} object}
@@ -32,7 +39,7 @@ A list with the cosine-tapered estimates and the adaptive estimates, invisibly.
 }
 \description{
 Plot the results of \code{\link{psdcore}} against the results of 
-\code{\link[stats]{spec.pgram}}
+\code{\link{spec.pgram}}
 }
 \examples{
 set.seed(1234)
