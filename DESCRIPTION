@@ -2,8 +2,8 @@ Package: psd
 Type: Package
 Title: Adaptive, Sine-Multitaper Power Spectral Density and Cross
         Spectrum Estimation
-Version: 2.0.0
-Date: 2020-06-21
+Version: 2.1.0
+Date: 2020-06-28
 Authors@R: 
     c(person(given = c("Andrew","J."),
              family = "Barbour",
@@ -29,19 +29,19 @@ URL: https://github.com/abarbour/psd, Barbour and Parker (2014):
         Sidorenko (1995): https://doi.org/10.1109/78.365298
 BugReports: https://github.com/abarbour/psd/issues
 Depends: R (>= 2.14.1)
-Imports: Rcpp (>= 0.11.5), RColorBrewer, zoo
+Imports: Rcpp (>= 0.11.5), RColorBrewer
 Suggests: bspec, fftw (>= 1.0.3), ggplot2 (>= 0.9), multitaper, plyr,
         RSEIS, rbenchmark, reshape2, knitr, rmarkdown, signal, formatR,
         testthat (>= 2.1.0)
 Encoding: UTF-8
 VignetteBuilder: knitr
 LinkingTo: Rcpp, RcppArmadillo
-RoxygenNote: 7.1.0
+RoxygenNote: 7.1.1
 NeedsCompilation: yes
-Packaged: 2020-06-22 02:08:42 UTC; abarbour
+Packaged: 2020-06-29 03:43:18 UTC; abarbour
 Author: Andrew J. Barbour [aut, cre] (<https://orcid.org/0000-0002-6890-2452>),
   Jonathan Kennel [aut] (<https://orcid.org/0000-0003-4474-6886>),
   Robert L. Parker [aut]
 Maintainer: Andrew J. Barbour <andy.barbour@gmail.com>
 Repository: CRAN
-Date/Publication: 2020-06-22 05:10:02 UTC
+Date/Publication: 2020-06-29 04:50:06 UTC
