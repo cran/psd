@@ -9,19 +9,19 @@ knit_hooks$set(par = function(before, options, envir){
   }
 })
 
-## ----eval=TRUE, echo=TRUE, label="Load_library"-----------------------
+## ----eval=TRUE, echo=TRUE, label="Loadlibrary"------------------------
 library(psd)
 
-## ----eval=TRUE, eval=TRUE, label="Load_Project_MAGNET_data"-----------
+## ----eval=TRUE, eval=TRUE, label="LoadProjectMAGNETdata"--------------
 data(magnet)
 
-## ----eval=TRUE, eval=TRUE, label="Show_contents_of_Project_MAGNET"----
+## ----eval=TRUE, eval=TRUE, label="ShowcontentsofProjectMAGNET"--------
 names(magnet)
 
 ## ----eval=TRUE, echo=TRUE, label="Outliers", par=TRUE-----------------
 subset(magnet, abs(mdiff)>0)
 
-## ----eval=TRUE, echo=FALSE, fig.width=6.0, fig.height=3.0, label=MAGNET-TS, par=TRUE----
+## ----eval=TRUE, echo=FALSE, fig.width=6.0, fig.height=3.0, label=MAGNETTS, par=TRUE----
 par(mar=c(4,4,1,0.4))
 plot(raw ~ km, magnet, col=NA, ylab="Magnetic anomaly", xlab="Along-track distance, km")
 abline(v=subset(magnet, abs(mdiff)>0)$km, col='grey')
@@ -51,20 +51,20 @@ plot(psdc, log="dB", add=TRUE, lwd=3, lty=5, col='black')
 plot(psdr, log="dB", add=TRUE, lwd=3, lty=5, col='red')
 text(c(0.28,0.34), c(11,23), c("Clean","Raw"), cex=1, col=1:2, font=2)
 
-## ----eval=FALSE, echo=TRUE, label="Naive_spectrum_estimation"---------
+## ----eval=FALSE, echo=TRUE, label="Naivespectrumestimation"-----------
 #  spec.pgram(X, pad=1, taper=0.2, detrend=FALSE, demean=FALSE, plot=FALSE)
 
 ## ----eval=TRUE, echo=TRUE,  label=MAGNETNAIVE, par=TRUE---------------
 ntap <- psdc[['taper']] # get the previous vector of tapers
 psdcore(magnet$clean, ntaper=ntap, refresh=TRUE, plot=TRUE)
 
-## ----eval=TRUE, echo=TRUE, label="Load RSEIS package"-----------------
+## ----eval=TRUE, echo=TRUE, label="LoadRSEISpackage"-------------------
 library(RSEIS)
 dt=1 # km
 # prewhiten the data after adding a linear trend + offset
 summary(prewhiten(mc <- ts(magnet$clean+1e3, deltat=dt) + seq_along(magnet$clean), plot=FALSE))
 
-## ----eval=TRUE, echo=TRUE, label="AR prewhiten"-----------------------
+## ----eval=TRUE, echo=TRUE, label="ARprewhiten"------------------------
 summary(atsar <- prewhiten(mc, AR.max=100, plot=FALSE))
 # linear model:
 str(atsar[['lmdfit']])
@@ -78,18 +78,18 @@ plot(ts.union(orig.plus.trend=mc, linear=ats_lm, ar=ats_ar), yax.flip=TRUE,
      main=sprintf("Prewhitened Project MAGNET series"), las=0)
 mtext(sprintf("linear and linear+AR(%s)", atsar[['ardfit']][['order']]), line=1.1)
 
-## ----eval=TRUE, echo=TRUE, label="Sampling rate versus interval"------
+## ----eval=TRUE, echo=TRUE, label="Samplingrateversusinterval"---------
 a <- rnorm(32)
 all.equal(psdcore(a,1), psdcore(a,-1))
 
-## ----eval=TRUE, echo=TRUE, label="Compute PSD with mtapspec"----------
+## ----eval=TRUE, echo=TRUE, label="ComputePSDwithmtapspec"-------------
 tapinit <- 10
 Mspec <- mtapspec(ats_lm, deltat(ats_lm), MTP=list(kind=2, inorm=3, nwin=tapinit, npi=0))
 
-## ----eval=TRUE, echo=TRUE, label="Structure of mtapspec-psd"----------
+## ----eval=TRUE, echo=TRUE, label="Structureofmtapspecpsd"-------------
 str(Mspec)
 
-## ----eval=TRUE, echo=TRUE, label="Comparative spectra: mtapspec vs pspectrum"----
+## ----eval=TRUE, echo=TRUE, label="Comparativespectramtapspecvspspectrum"----
 Xspec <- spec.pgram(ats_lm, pad=1, taper=0.2, detrend=TRUE, demean=TRUE, plot=FALSE)
 Pspec <- psdcore(ats_lm, ntaper=tapinit)
 Aspec <- pspectrum(ats_lm, ntap.init=tapinit)
@@ -116,11 +116,11 @@ legend("topright",
   c("spec.pgram","RSEIS::mtapspec","psdcore","pspectrum"), 
   title="Estimator", col=cols, lwd=lwds, bg='grey95', box.col=NA, cex=0.8, inset=c(0.02,0.03))
 
-## ----eval=TRUE, echo=TRUE, label="Interpolate results"----------------
+## ----eval=TRUE, echo=TRUE, label="Interpolateresults"-----------------
 library(signal, warn.conflicts=FALSE)
 pltpi <- interp1(pltf, pltp, Pspec[['freq']])
 
-## ----eval=TRUE, echo=TRUE, label="Summarize regression statistics"----
+## ----eval=TRUE, echo=TRUE, label="Summarizeregressionstatistics"------
 df <- data.frame(x=dB(Pspec[['spec']]), y=pltpi, tap=unclass(Aspec[['taper']]))
 summary(dflm <- lm(y ~ x + 0, df))
 df$res <- residuals(dflm)
@@ -139,7 +139,7 @@ par(las=0)
 Bspec_plt <- plot(Bspec)
 with(Pspec, lines(freq, spec, col="red", lwd=2))
 
-## ----eval=TRUE, echo=TRUE, label="AR spectrum"------------------------
+## ----eval=TRUE, echo=TRUE, label="ARspectrum"-------------------------
 ntap <- 7
 psd_ar <- psdcore(ats_ar, ntaper=ntap, refresh=TRUE)
 dB(mean(psd_ar$spec))
@@ -169,7 +169,7 @@ legend("topright",
 	  "approximation"),
 lwd=c(1,3,3), col=c("black","black","red"), bg="white")
 
-## ----eval=TRUE, echo=TRUE, label="Compute spectral properties"--------
+## ----eval=TRUE, echo=TRUE, label="Computespectralproperties"----------
 spp <- spectral_properties(Pspec[['taper']], db.ci=TRUE)
 spa <- spectral_properties(Aspec[['taper']], db.ci=TRUE)
 str(spa)
@@ -211,11 +211,11 @@ par(mar=c(4,0,2,2))
 boxplot(relp, range=0, main=sprintf("%.01f",median(relp)), axes=FALSE, ylim=yl, yaxs="i", notch=TRUE)
 axis(4)
 
-## ----eval=TRUE, echo=TRUE, label="Get adaptive history"---------------
+## ----eval=TRUE, echo=TRUE, label="Getadaptivehistory"-----------------
 pspectrum(ats_lm, niter=4, plot=FALSE)
 str(AH <- get_adapt_history())
 
-## ----eval=TRUE, echo=TRUE, label="and manipulate it a bit"------------
+## ----eval=TRUE, echo=TRUE, label="andmanipulateitabit"----------------
 Freqs <- AH[['freq']]
 Dat <- AH[['stg_psd']]
 numd <- length(Freqs)
@@ -229,7 +229,7 @@ seqcols <- seq_len(numit)
 itseq <- seqcols - 1
 toadd <- matrix(rep(itseq, numd), ncol=numit, byrow=TRUE)
 PltStg <- StgPsd + (sc<-6)*toadd
-par(xpd=TRUE, oma=rep(0,4), mar=c(0.4,4,3,2), tcl=-0.4)
+par(xpd=TRUE, oma=rep(0,4), mar=c(2,4,3,2), tcl=-0.3, mgp=c(2,0.5,0))
 matplot(Freqs, PltStg, type="l", lty=1, lwd=2, col="black",
         main="Adaptive estimation history", ylab="", xlab="",
         yaxt="n", frame.plot=FALSE,
@@ -241,7 +241,7 @@ mtext("(a)", font=2, adj=-0.15, line=-0.3)
 mtext("PSDs by stage", line=-0.3, font=4)
 
 ## ----eval=TRUE, echo=FALSE, fig.width=4.8, fig.height=2.4, label=HIST2, par=TRUE----
-par(xpd=TRUE, las=1, oma=rep(0,4), mar=c(0.4,4,2,2), tcl=-0.4)
+par(xpd=TRUE, las=1, oma=rep(0,4), mar=c(2,4,2,2), tcl=-0.3, mgp=c(2,0.5,0))
 Cols <- rev(rev(brewer.pal(9, "PuBuGn"))[seqcols])
 invisible(lapply(rev(seqcols), FUN=function(mcol, niter=numit, Frq=Freqs, Dat=StgTap, cols=Cols){
   iter <- (niter+1)-mcol
@@ -272,7 +272,7 @@ mtext("(b)", font=2, adj=-0.15, line=0.5)
 mtext("Tapers by stage", line=0.5, font=4)
 
 ## ----eval=TRUE, echo=FALSE, fig.width=4.8, fig.height=2.7, label=HIST3, par=TRUE----
-par(xpd=TRUE, las=1, oma=rep(0,4), mar=c(3.5,4,2,2), tcl=-0.4)
+par(xpd=TRUE, las=1, oma=rep(0,4), mar=c(3.5,4,2,2), tcl=-0.3, mgp=c(2,0.5,0))
 invisible(lapply(rev(seqcols), FUN=function(mcol, niter=numit, Frq=Freqs, Tap=StgTap, cols=Cols){
   iter <- (niter+1)-mcol
   tap <- Tap[,mcol]

@@ -3,7 +3,7 @@
 % -*- coding: utf-8 -*-
 %%\newcommand{\PR}{\Sexpr[results=rd]{tools:::Rd_expr_PR(#1)}}
 %%\newcommand{\Rlogo}{\if{html}{\figure{../../html/logo.jpg}}\if{latex}{\figure{logo.jpg}{options: width=0.5in}}}
-\newcommand{\GITpkg}{\href{https://www.github.com/abarbour/#1}{github}}
+\newcommand{\GITpkg}{\href{https://github.com/abarbour/#1}{github}}
 \newcommand{\CRANpkg}{\href{https://cran.r-project.org/package=#1}{CRAN}}
 \newcommand{\CODEcov}{\href{https://codecov.io/github/abarbour/#1?branch=master}{codecov.io}}
 \newcommand{\Appvey}{\href{https://ci.appveyor.com/project/abarbour/#1}{AppVeyor}}
@@ -23,6 +23,14 @@
 %  \itemize{ \item \code{} }
 %}
 %
+
+
+\section{CHANGES IN \psd{} VERSION 2.1.1 (2022-02-01)}{
+  \itemize{
+	\item Fixes some build check errors on cran related to vignettes
+	\item Added some additional unit tests
+  }
+}
 
 \section{CHANGES IN \psd{} VERSION 2.1.0 (2020-06-28)}{
   \itemize{
