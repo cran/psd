@@ -52,7 +52,7 @@ plot(psdr, log="dB", add=TRUE, lwd=3, lty=5, col='red')
 text(c(0.28,0.34), c(11,23), c("Clean","Raw"), cex=1, col=1:2, font=2)
 
 ## ----eval=FALSE, echo=TRUE, label="Naivespectrumestimation"-----------
-#  spec.pgram(X, pad=1, taper=0.2, detrend=FALSE, demean=FALSE, plot=FALSE)
+# spec.pgram(X, pad=1, taper=0.2, detrend=FALSE, demean=FALSE, plot=FALSE)
 
 ## ----eval=TRUE, echo=TRUE,  label=MAGNETNAIVE, par=TRUE---------------
 ntap <- psdc[['taper']] # get the previous vector of tapers
